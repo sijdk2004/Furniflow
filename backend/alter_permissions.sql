@@ -1,0 +1,2 @@
+ALTER TABLE permissions ADD COLUMN IF NOT EXISTS display_name VARCHAR(100);
+ALTER TABLE permissions ADD COLUMN IF NOT EXISTS description TEXT;
