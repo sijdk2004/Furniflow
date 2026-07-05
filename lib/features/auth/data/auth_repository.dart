@@ -15,7 +15,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthResponseModel> login(String username, String password, String tenantId) async {
     final response = await _dio.post(
-      'http://127.0.0.1:3000/v1/auth/login',
+      'http://127.0.0.1:5182/v1/auth/login',
       data: {
         'username': username,
         'password': password,

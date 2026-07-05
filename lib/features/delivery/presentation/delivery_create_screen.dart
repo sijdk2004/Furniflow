@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/colors.dart';
 import '../data/delivery_provider.dart';
 import '../../production/data/production_order_provider.dart';
+import '../../../core/utils/shared_dialogs.dart';
 
 class DeliveryCreateScreen extends ConsumerStatefulWidget {
   const DeliveryCreateScreen({super.key});
@@ -46,7 +47,7 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
       final repo = ref.read(deliveryRepositoryProvider);
       await repo.createDelivery({
         'production_order_id': _selectedProductionOrderId,
-        'expected_delivery_date': _expectedDeliveryDate.toIso8601String(),
+        'expected_delivery_date': _expectedDeliveryDate.toUtc().toIso8601String(),
         'assigned_vehicle': _vehicleController.text.isNotEmpty ? _vehicleController.text : null,
         'assigned_driver': _driverController.text.isNotEmpty ? _driverController.text : null,
         'delivery_notes': _notesController.text.isNotEmpty ? _notesController.text : null,
@@ -55,9 +56,7 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
       if (mounted) {
         ref.invalidate(deliveriesProvider);
         context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Delivery scheduled successfully'), backgroundColor: Colors.green),
-        );
+        SharedDialogs.showSuccessSnackbar(context, 'Delivery scheduled successfully');
       }
     } catch (e) {
       if (mounted) {
@@ -74,7 +73,7 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productionOrdersState = ref.watch(productionOrderProvider);
+    final completedProductionOrdersState = ref.watch(completedProductionOrdersProvider);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
@@ -112,12 +111,10 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                       const SizedBox(height: 24),
                       
                       // Production Order Selection
-                      productionOrdersState.when(
+                      completedProductionOrdersState.when(
                         loading: () => const CircularProgressIndicator(),
                         error: (err, stack) => Text('Error loading orders: $err', style: const TextStyle(color: Colors.red)),
                         data: (orders) {
-                          // Note: In a real app we'd filter strictly by "Ready For Delivery" from the API.
-                          // Here we show them all but the backend enforces the rule.
                           return DropdownButtonFormField<String>(
                             decoration: const InputDecoration(
                               labelText: 'Production Order *',
@@ -129,7 +126,7 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                             style: const TextStyle(color: AppColors.textPrimaryDark),
                             value: _selectedProductionOrderId,
                             items: orders.map((order) {
-                              final displayId = order.id.toString().substring(0, 8);
+                              final displayId = order.id.toString().length > 8 ? order.id.toString().substring(0, 8) : order.id.toString();
                               return DropdownMenuItem(
                                 value: order.id,
                                 child: Text('PO-$displayId - ${order.status}'),

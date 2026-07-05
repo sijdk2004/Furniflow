@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
-import '../../../core/theme/colors.dart';
 import '../data/delivery_provider.dart';
 
 class DeliveryListScreen extends ConsumerStatefulWidget {
@@ -13,152 +14,222 @@ class DeliveryListScreen extends ConsumerStatefulWidget {
 }
 
 class _DeliveryListScreenState extends ConsumerState<DeliveryListScreen> {
+  String _searchQuery = '';
+  final _dateFormat = DateFormat('MMM dd, yyyy');
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'Scheduled': return Colors.blue;
+      case 'Dispatched': return Colors.orange;
+      case 'In Transit': return Colors.purple;
+      case 'Delivered': return Colors.green;
+      case 'Cancelled': return Colors.red;
+      default: return Colors.grey;
+    }
+  }
+
+  Widget _buildStatusBadge(String status) {
+    final color = _getStatusColor(status);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        status,
+        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final deliveriesState = ref.watch(deliveriesProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(context),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Delivery Management',
+                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text('View and manage all deliveries', style: theme.textTheme.bodyMedium),
+                  ],
+                ),
+                ElevatedButton.icon(
+                  onPressed: () => context.go('/delivery/create'),
+                  icon: const Icon(LucideIcons.plus, size: 18),
+                  label: const Text('Schedule Delivery'),
+                ),
+              ],
+            ).animate().fade().slideY(begin: -0.2),
+          ),
+
+          // Search bar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: TextField(
+                onChanged: (v) => setState(() => _searchQuery = v),
+                decoration: const InputDecoration(
+                  hintText: 'Search by delivery no, customer...',
+                  prefixIcon: Icon(LucideIcons.search, size: 18),
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
+          ).animate().fade(delay: 100.ms).slideY(begin: 0.1),
+
+          const SizedBox(height: 16),
+
+          // Table
           Expanded(
             child: deliveriesState.when(
-              loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-              error: (err, stack) => Center(
-                child: Text('Error: $err', style: const TextStyle(color: Colors.red)),
-              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (err, _) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.red))),
               data: (items) {
-                if (items.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      'No deliveries found',
-                      style: TextStyle(color: AppColors.textSecondaryDark),
-                    ),
-                  );
-                }
+                final filtered = items.where((item) {
+                  final q = _searchQuery.toLowerCase();
+                  return (item['delivery_number'] ?? '').toString().toLowerCase().contains(q) ||
+                      (item['customer_name'] ?? '').toString().toLowerCase().contains(q) ||
+                      (item['order_number'] ?? '').toString().toLowerCase().contains(q);
+                }).toList();
 
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceDark,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.borderDark),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: DataTable(
-                        headingRowColor: MaterialStateProperty.all(AppColors.backgroundDark),
-                        columns: const [
-                          DataColumn(label: Text('Delivery No', style: TextStyle(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('PO No', style: TextStyle(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Customer', style: TextStyle(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Expected Date', style: TextStyle(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Status', style: TextStyle(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold))),
-                          DataColumn(label: Text('Actions', style: TextStyle(color: AppColors.textPrimaryDark, fontWeight: FontWeight.bold))),
-                        ],
-                        rows: items.map((item) {
-                          final expectedDate = DateTime.parse(item['expected_delivery_date']);
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(item['delivery_number'], style: const TextStyle(color: AppColors.textPrimaryDark))),
-                              DataCell(Text(item['order_number'], style: const TextStyle(color: AppColors.textPrimaryDark))),
-                              DataCell(Text(item['customer_name'] ?? 'N/A', style: const TextStyle(color: AppColors.textPrimaryDark))),
-                              DataCell(Text(DateFormat('MMM dd, yyyy').format(expectedDate), style: const TextStyle(color: AppColors.textPrimaryDark))),
-                              DataCell(
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: _getStatusColor(item['status']).withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Text(
-                                    item['status'],
-                                    style: TextStyle(color: _getStatusColor(item['status']), fontSize: 12, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                              DataCell(
-                                IconButton(
-                                  icon: const Icon(Icons.remove_red_eye, color: AppColors.primary, size: 20),
-                                  onPressed: () => context.go('/delivery/view/${item['id']}'),
-                                ),
-                              ),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Card(
+                    clipBehavior: Clip.hardEdge,
+                    child: Column(
+                      children: [
+                        // Header Row
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          color: theme.colorScheme.surfaceVariant.withOpacity(0.5),
+                          child: Row(
+                            children: [
+                              _hdr('Delivery No', flex: 20),
+                              _hdr('PO No', flex: 15),
+                              _hdr('Customer', flex: 20),
+                              _hdr('Expected Date', flex: 16),
+                              _hdr('Status', flex: 16),
+                              _hdr('', flex: 8),
                             ],
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        ),
+                        const Divider(height: 1),
+
+                        // Data Rows
+                        Expanded(
+                          child: filtered.isEmpty
+                              ? const Center(child: Text('No deliveries found'))
+                              : ListView.separated(
+                                  itemCount: filtered.length,
+                                  separatorBuilder: (_, __) => const Divider(height: 1),
+                                  itemBuilder: (context, i) {
+                                    final item = filtered[i];
+                                    final expectedDate = DateTime.tryParse(
+                                        item['expected_delivery_date'] ?? '');
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 10),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            flex: 20,
+                                            child: Text(
+                                              item['delivery_number'] ?? '-',
+                                              style: TextStyle(
+                                                color: theme.colorScheme.primary,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 15,
+                                            child: Text(
+                                              item['order_number'] ?? '-',
+                                              style: theme.textTheme.bodyMedium,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 20,
+                                            child: Text(
+                                              item['customer_name'] ?? 'N/A',
+                                              style: theme.textTheme.bodyMedium,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 16,
+                                            child: Text(
+                                              expectedDate != null
+                                                  ? _dateFormat.format(expectedDate)
+                                                  : '-',
+                                              style: theme.textTheme.bodyMedium,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Expanded(
+                                            flex: 16,
+                                            child: _buildStatusBadge(item['status'] ?? ''),
+                                          ),
+                                          Expanded(
+                                            flex: 8,
+                                            child: IconButton(
+                                              icon: const Icon(LucideIcons.eye, size: 16),
+                                              tooltip: 'View Delivery',
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(
+                                                  minWidth: 32, minHeight: 32),
+                                              onPressed: () =>
+                                                  context.go('/delivery/view/${item['id']}'),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
                     ),
-                  ),
+                  ).animate().fade(delay: 200.ms),
                 );
               },
             ),
           ),
+
+          const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceDark,
-        border: Border(bottom: BorderSide(color: AppColors.borderDark)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Delivery Management',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryDark,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'View and manage all deliveries',
-                style: TextStyle(color: AppColors.textSecondaryDark),
-              ),
-            ],
-          ),
-          ElevatedButton.icon(
-            onPressed: () => context.go('/delivery/create'),
-            icon: const Icon(Icons.add),
-            label: const Text('Schedule Delivery'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-        ],
+  Widget _hdr(String label, {required int flex}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+        overflow: TextOverflow.ellipsis,
       ),
     );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'Scheduled':
-        return Colors.blue;
-      case 'Dispatched':
-        return Colors.orange;
-      case 'In Transit':
-        return Colors.purple;
-      case 'Delivered':
-        return Colors.green;
-      case 'Cancelled':
-        return Colors.red;
-      default:
-        return AppColors.textSecondaryDark;
-    }
   }
 }

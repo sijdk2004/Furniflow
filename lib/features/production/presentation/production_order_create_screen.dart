@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../data/production_order_provider.dart';
 import '../../catalog/data/product_api_provider.dart';
 import '../../sales_orders/data/sales_order_provider.dart';
+import '../../../core/utils/shared_dialogs.dart';
 
 class ProductionOrderCreateScreen extends ConsumerStatefulWidget {
   const ProductionOrderCreateScreen({super.key});
@@ -43,7 +44,7 @@ class _ProductionOrderCreateScreenState extends ConsumerState<ProductionOrderCre
       await ref.read(productionOrderProvider.notifier).createOrder(payload);
       if (mounted) {
         context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Production Order created successfully')));
+        SharedDialogs.showSuccessSnackbar(context, 'Production Order created successfully');
       }
     } catch (e) {
       if (mounted) {
@@ -104,7 +105,7 @@ class _ProductionOrderCreateScreenState extends ConsumerState<ProductionOrderCre
                                   const DropdownMenuItem(value: null, child: Text('None (Make to Stock)')),
                                   ...orders.map((o) => DropdownMenuItem(
                                     value: o.id,
-                                    child: Text('SO-${o.id.substring(0,8)} - ${o.customer?['name'] ?? 'Unknown'}'),
+                                    child: Text('SO-${o.id.length > 8 ? o.id.substring(0,8) : o.id} - ${o.customer?['name'] ?? 'Unknown'}'),
                                   )),
                                 ],
                                 onChanged: (val) => setState(() => _selectedSalesOrderId = val),

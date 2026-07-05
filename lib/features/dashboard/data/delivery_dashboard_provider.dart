@@ -31,7 +31,7 @@ class DeliveryDashboardState {
   }
 }
 
-class DeliveryDashboardNotifier extends AsyncNotifier<DeliveryDashboardState> {
+class DeliveryDashboardNotifier extends AutoDisposeAsyncNotifier<DeliveryDashboardState> {
   @override
   FutureOr<DeliveryDashboardState> build() async {
     return _fetchData('1M');
@@ -43,7 +43,7 @@ class DeliveryDashboardNotifier extends AsyncNotifier<DeliveryDashboardState> {
       final response = await apiClient.get('/v1/system/delivery-dashboard/data', queryParameters: {'timeframe': timeframe});
       
       if (response.data != null && response.data['success'] == true) {
-        return DeliveryDashboardState(data: response.data['data'], timeframe: timeframe);
+        return DeliveryDashboardState(data: Map<String, dynamic>.from(response.data['data'] as Map), timeframe: timeframe);
       } else {
         throw Exception('Failed to load delivery dashboard data');
       }
@@ -53,16 +53,11 @@ class DeliveryDashboardNotifier extends AsyncNotifier<DeliveryDashboardState> {
   }
 
   Future<void> setTimeframe(String timeframe) async {
-    state = const AsyncValue.loading();
-    try {
-      final data = await _fetchData(timeframe);
-      state = AsyncValue.data(data);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    state = const AsyncLoading<DeliveryDashboardState>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() => _fetchData(timeframe));
   }
 }
 
-final deliveryDashboardNotifierProvider = AsyncNotifierProvider<DeliveryDashboardNotifier, DeliveryDashboardState>(() {
+final deliveryDashboardNotifierProvider = AsyncNotifierProvider.autoDispose<DeliveryDashboardNotifier, DeliveryDashboardState>(() {
   return DeliveryDashboardNotifier();
 });

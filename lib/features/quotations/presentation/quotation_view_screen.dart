@@ -40,7 +40,7 @@ class QuotationViewScreen extends ConsumerWidget {
           if (snapshot.hasError) return Center(child: Text('Error: ${snapshot.error}'));
           
           final q = snapshot.data!;
-          final cusName = q.customer != null ? "${q.customer!['first_name']} ${q.customer!['last_name'] ?? ''}" : 'Unknown';
+          final cusName = q.customer != null ? "${q.customer!['name'] ?? 'Unknown'}" : 'Unknown';
           
           return SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -65,6 +65,10 @@ class QuotationViewScreen extends ConsumerWidget {
                     ),
                     Row(
                       children: [
+                        if (q.status != 'Converted') const Padding(
+                          padding: EdgeInsets.only(right: 16),
+                          child: Text('Workflow Actions:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                        ),
                         if (q.status == 'Draft') ...[
                           ElevatedButton(onPressed: () => _updateStatus(context, ref, 'Submitted'), child: const Text('Submit')),
                         ],

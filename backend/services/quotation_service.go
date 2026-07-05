@@ -43,7 +43,8 @@ func (s *QuotationService) buildItems(quotationID string, reqItems []dtos.Quotat
 }
 
 func (s *QuotationService) Create(tenantID, userID string, req dtos.QuotationRequest) (*models.Quotation, error) {
-	qID := fmt.Sprintf("QT-%s", uuid.New().String()[:8])
+	milli := time.Now().UnixMilli()
+	qID := fmt.Sprintf("QT-%06d", milli%1000000)
 	
 	items := s.buildItems(qID, req.Items)
 	subtotal, total := s.calculateTotals(req, items)

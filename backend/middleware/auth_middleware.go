@@ -14,11 +14,13 @@ func JWTProtected(secret string) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if authHeader == "" {
+			fmt.Println("Auth failed: Missing authorization header")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing authorization header"})
 		}
 
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
+			fmt.Println("Auth failed: Invalid authorization format", authHeader)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid authorization format"})
 		}
 
@@ -31,11 +33,13 @@ func JWTProtected(secret string) fiber.Handler {
 		})
 
 		if err != nil || !token.Valid {
+			fmt.Println("Auth failed: Invalid or expired token. err:", err)
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid or expired token"})
 		}
 
 		claims, ok := token.Claims.(jwt.MapClaims)
 		if !ok {
+			fmt.Println("Auth failed: Invalid token claims")
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token claims"})
 		}
 
@@ -44,6 +48,7 @@ func JWTProtected(secret string) fiber.Handler {
 		if dbErr == nil {
 			var revoked models.RevokedToken
 			if err := dbConn.Where("token = ?", tokenString).First(&revoked).Error; err == nil {
+				fmt.Println("Auth failed: Token has been revoked")
 				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Token has been revoked"})
 			}
 		}
@@ -71,7 +76,6 @@ func CheckPermission(requiredPermission string) fiber.Handler {
 		tenantID := c.Locals("tenant_id").(string)
 		userID := c.Locals("user_id").(string)
 
-		// Connect to DB directly for PoC purposes. In prod, inject repo or use redis.
 		// Connect to DB via helper
 		db, err := dbPkg.InitDB()
 		if err != nil {
@@ -84,11 +88,9 @@ func CheckPermission(requiredPermission string) fiber.Handler {
 		}
 
 		hasPermission := false
+		fmt.Printf("User %s checking req: %s. Roles count: %d\n", userID, requiredPermission, len(user.Roles))
 		for _, role := range user.Roles {
-			if role.RoleCode == "PLATFORM_ADMIN" || role.RoleCode == "SYS_ADMIN" {
-				hasPermission = true
-				break
-			}
+			fmt.Printf("Role %s has %d perms\n", role.RoleCode, len(role.Permissions))
 			for _, p := range role.Permissions {
 				if p.PermissionCode == requiredPermission {
 					hasPermission = true

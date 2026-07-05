@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../data/bom_provider.dart';
+import '../../catalog/data/product_api_provider.dart';
+import '../../../core/network/providers/network_providers.dart';
+import '../../catalog/domain/product_model_api.dart';
+import '../../master_data/domain/master_data_model.dart';
 
 class BomFormScreen extends ConsumerStatefulWidget {
   final String? bomId;
@@ -24,20 +28,34 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
 
   final List<Map<String, dynamic>> _items = [];
 
-  final List<Map<String, dynamic>> _mockProducts = [
-    {'id': 'p1', 'product_name': 'Premium Oak Dining Table'},
-    {'id': 'p2', 'product_name': 'Classic Oak Chair'},
-  ];
-
-  final List<Map<String, dynamic>> _mockUoms = [
-    {'id': 'u1', 'code': 'PCS'},
-    {'id': 'u2', 'code': 'M'},
-    {'id': 'u3', 'code': 'KG'},
-  ];
+  List<ProductModel> _products = [];
+  List<MasterDataModel> _uoms = [];
+  bool _isLoadingData = true;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      final prods = await ref.read(productsApiProvider.future);
+      final uomRes = await ref.read(apiClientProvider).get('/v1/system/masters/units_of_measure');
+      final uomsList = (uomRes.data['data'] as List).map((e) => MasterDataModel.fromJson(e)).toList();
+      if (mounted) {
+        setState(() {
+          _products = prods;
+          _uoms = uomsList;
+          _isLoadingData = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoadingData = false);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading data: $e')));
+      }
+    }
   }
 
   void _addItem() {
@@ -64,10 +82,17 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
       return;
     }
     
-    // Check if items are fully filled
+    // Check if items are fully filled and valid
     for (var i = 0; i < _items.length; i++) {
       if (_items[i]['component_id'] == null || _items[i]['uom_id'] == null) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please complete item #${i + 1}')));
+        return;
+      }
+      if (_items[i]['component_id'] == _selectedProductId) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('A product cannot be a component of itself (Item #${i + 1}). Circular Dependency!'),
+          backgroundColor: Colors.red,
+        ));
         return;
       }
     }
@@ -99,8 +124,9 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> products = _mockProducts;
-    List<dynamic> uoms = _mockUoms;
+    if (_isLoadingData) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -136,9 +162,9 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
                       DropdownButtonFormField<String>(
                         value: _selectedProductId,
                         decoration: const InputDecoration(labelText: 'Target Product *'),
-                        items: products.map((p) => DropdownMenuItem<String>(
-                          value: p['id'],
-                          child: Text(p['product_name']),
+                        items: _products.map((p) => DropdownMenuItem<String>(
+                          value: p.id,
+                          child: Text('${p.productCode} - ${p.productName}'),
                         )).toList(),
                         onChanged: (val) => setState(() => _selectedProductId = val),
                         validator: (val) => val == null ? 'Required' : null,
@@ -209,9 +235,9 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
                                 child: DropdownButtonFormField<String>(
                                   value: item['component_id'],
                                   decoration: InputDecoration(labelText: 'Component ${idx + 1} *', isDense: true),
-                                  items: products.map((p) => DropdownMenuItem<String>(
-                                    value: p['id'],
-                                    child: Text(p['product_name']),
+                                  items: _products.map((p) => DropdownMenuItem<String>(
+                                    value: p.id,
+                                    child: Text('${p.productCode} - ${p.productName}'),
                                   )).toList(),
                                   onChanged: (val) => setState(() => item['component_id'] = val),
                                 ),
@@ -232,9 +258,9 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
                                 child: DropdownButtonFormField<String>(
                                   value: item['uom_id'],
                                   decoration: const InputDecoration(labelText: 'UOM *', isDense: true),
-                                  items: uoms.map((u) => DropdownMenuItem<String>(
-                                    value: u['id'],
-                                    child: Text(u['code']),
+                                  items: _uoms.map((u) => DropdownMenuItem<String>(
+                                    value: u.id,
+                                    child: Text(u.code),
                                   )).toList(),
                                   onChanged: (val) => setState(() => item['uom_id'] = val),
                                 ),

@@ -5,7 +5,11 @@ class NetworkException implements Exception {
   NetworkException(this.message, [this.statusCode]);
 
   @override
-  String toString() => 'NetworkException: $message (Status Code: $statusCode)';
+  String toString() {
+    // Return only the plain message so that UI displays are clean and user-friendly.
+    // E.g. "production order is not Ready For Delivery" instead of "NetworkException: ..."
+    return message;
+  }
 }
 
 class UnauthorizedException extends NetworkException {

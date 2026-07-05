@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../master_data/presentation/master_data_provider.dart';
 import '../data/product_api_provider.dart';
 import '../../master_data/data/master_data_repository.dart';
+import '../../../core/utils/shared_dialogs.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   final String? id;
@@ -94,6 +95,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       }
       if (mounted) {
         ref.refresh(productsApiProvider);
+        SharedDialogs.showSuccessSnackbar(context, 'Product saved successfully');
         context.go('/catalog');
       }
     } catch (e) {
@@ -105,11 +107,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-
     final catFuture = ref.watch(masterDataProvider('product_categories'));
     final woodFuture = ref.watch(masterDataProvider('wood_types'));
     final uomFuture = ref.watch(masterDataProvider('units_of_measure'));
+
+    final isPageLoading = _isLoading || catFuture.isLoading || woodFuture.isLoading || uomFuture.isLoading;
+
+    if (isPageLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final categories = catFuture.valueOrNull ?? [];
+    final woodTypes = woodFuture.valueOrNull ?? [];
+    final uoms = uomFuture.valueOrNull ?? [];
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.id == null ? 'Create Product' : 'Edit Product')),
@@ -152,42 +162,30 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    catFuture.when(
-                      data: (data) => DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
-                        value: _selectedCategory,
-                        items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                        onChanged: (val) => setState(() => _selectedCategory = val),
-                      ),
-                      loading: () => const CircularProgressIndicator(),
-                      error: (e, s) => const Text('Error'),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                      value: _selectedCategory,
+                      items: categories.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                      onChanged: (val) => setState(() => _selectedCategory = val),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
-                          child: woodFuture.when(
-                            data: (data) => DropdownButtonFormField<String>(
-                              decoration: const InputDecoration(labelText: 'Wood Type', border: OutlineInputBorder()),
-                              value: _selectedWoodType,
-                              items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                              onChanged: (val) => setState(() => _selectedWoodType = val),
-                            ),
-                            loading: () => const CircularProgressIndicator(),
-                            error: (e, s) => const Text('Error'),
+                          child: DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(labelText: 'Wood Type', border: OutlineInputBorder()),
+                            value: _selectedWoodType,
+                            items: woodTypes.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                            onChanged: (val) => setState(() => _selectedWoodType = val),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: uomFuture.when(
-                            data: (data) => DropdownButtonFormField<String>(
-                              decoration: const InputDecoration(labelText: 'UOM', border: OutlineInputBorder()),
-                              value: _selectedUOM,
-                              items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                              onChanged: (val) => setState(() => _selectedUOM = val),
-                            ),
-                            loading: () => const CircularProgressIndicator(),
-                            error: (e, s) => const Text('Error'),
+                          child: DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(labelText: 'UOM', border: OutlineInputBorder()),
+                            value: _selectedUOM,
+                            items: uoms.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                            onChanged: (val) => setState(() => _selectedUOM = val),
                           ),
                         ),
                       ],

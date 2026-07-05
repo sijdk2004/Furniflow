@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/customer_provider.dart';
 import '../../master_data/domain/master_data_model.dart';
 import '../../master_data/data/master_data_repository.dart';
+import '../../../core/utils/shared_dialogs.dart';
 
 final localMasterDataProvider = FutureProvider.family<List<MasterDataModel>, String>((ref, type) async {
   return ref.watch(masterDataRepositoryProvider).getMasterData(type);
@@ -35,6 +36,8 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   String? _selectedCity;
   bool _isActive = true;
   bool _isLoading = false;
+  bool _isCustomCity = false;
+  final _customCityCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -81,10 +84,11 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       'zip_code': _zipCtrl.text.isEmpty ? null : _zipCtrl.text,
       'tax_id': _taxCtrl.text.isEmpty ? null : _taxCtrl.text,
       'credit_limit': double.tryParse(_limitCtrl.text) ?? 0.0,
+      'custom_city_name': _isCustomCity && _customCityCtrl.text.isNotEmpty ? _customCityCtrl.text : null,
       'customer_type_id': _selectedType,
       'country_id': _selectedCountry,
       'state_id': _selectedState,
-      'city_id': _selectedCity,
+      'city_id': _selectedCity == 'others' ? null : _selectedCity,
       'is_active': _isActive,
     };
 
@@ -96,6 +100,7 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
       }
       if (mounted) {
         ref.refresh(customersProvider);
+        SharedDialogs.showSuccessSnackbar(context, 'Customer saved successfully');
         context.go('/customers');
       }
     } catch (e) {
@@ -109,11 +114,30 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
   Widget build(BuildContext context) {
     if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
-    // Master Data dropdown futures
     final typesFuture = ref.watch(localMasterDataProvider('customer_types'));
     final countriesFuture = ref.watch(localMasterDataProvider('countries'));
     final statesFuture = ref.watch(localMasterDataProvider('states'));
     final citiesFuture = ref.watch(localMasterDataProvider('cities'));
+
+    if (_isLoading || typesFuture.isLoading || countriesFuture.isLoading || statesFuture.isLoading || citiesFuture.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final indiaCountry = countriesFuture.value?.where((c) => c.name.toLowerCase() == 'india').firstOrNull;
+    if (_selectedCountry == null && indiaCountry != null && widget.id == null) {
+      _selectedCountry = indiaCountry.id;
+    }
+
+    final filteredStates = statesFuture.value?.where((s) => s.description == _selectedCountry).toList() ?? [];
+    print("DEBUG: _selectedCountry='$_selectedCountry', statesTotal=${statesFuture.value?.length}, filteredStates=${filteredStates.length}, indiaCountryId=${indiaCountry?.id}");
+    if (statesFuture.value != null && statesFuture.value!.isNotEmpty) {
+      print("DEBUG: First state desc='${statesFuture.value!.first.description}' vs _selectedCountry='$_selectedCountry'");
+    }
+
+    final filteredCities = citiesFuture.value?.where((c) => c.description == _selectedState).toList() ?? [];
+    if (!filteredCities.any((c) => c.id == 'others')) {
+      filteredCities.add(MasterDataModel(id: 'others', name: 'Others (Please Specify)', code: '', type: 'cities', description: '', isActive: true, sortOrder: 999));
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.id == null ? 'Create Customer' : 'Edit Customer')),
@@ -142,15 +166,11 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    typesFuture.when(
-                      data: (data) => DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: 'Customer Type', border: OutlineInputBorder()),
-                        value: _selectedType,
-                        items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                        onChanged: (val) => setState(() => _selectedType = val),
-                      ),
-                      loading: () => const CircularProgressIndicator(),
-                      error: (e, s) => Text('Failed to load types: $e'),
+                    DropdownButtonFormField<String>(
+                      decoration: const InputDecoration(labelText: 'Customer Type', border: OutlineInputBorder()),
+                      value: _selectedType,
+                      items: typesFuture.value?.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList() ?? [],
+                      onChanged: (val) => setState(() => _selectedType = val),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(controller: _address1Ctrl, decoration: const InputDecoration(labelText: 'Address Line 1', border: OutlineInputBorder())),
@@ -160,28 +180,24 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: countriesFuture.when(
-                            data: (data) => DropdownButtonFormField<String>(
-                              decoration: const InputDecoration(labelText: 'Country', border: OutlineInputBorder()),
-                              value: _selectedCountry,
-                              items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                              onChanged: (val) => setState(() => _selectedCountry = val),
-                            ),
-                            loading: () => const CircularProgressIndicator(),
-                            error: (e, s) => const Text('Error'),
+                          child: DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(labelText: 'Country', border: OutlineInputBorder()),
+                            value: _selectedCountry,
+                            items: countriesFuture.value?.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList() ?? [],
+                            onChanged: null, // Read-only
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: statesFuture.when(
-                            data: (data) => DropdownButtonFormField<String>(
-                              decoration: const InputDecoration(labelText: 'State', border: OutlineInputBorder()),
-                              value: _selectedState,
-                              items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                              onChanged: (val) => setState(() => _selectedState = val),
-                            ),
-                            loading: () => const CircularProgressIndicator(),
-                            error: (e, s) => const Text('Error'),
+                          child: DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(labelText: 'State', border: OutlineInputBorder()),
+                            value: _selectedState,
+                            items: filteredStates.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                            onChanged: (val) => setState(() {
+                              _selectedState = val;
+                              _selectedCity = null;
+                              _isCustomCity = false;
+                            }),
                           ),
                         ),
                       ],
@@ -190,21 +206,24 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: citiesFuture.when(
-                            data: (data) => DropdownButtonFormField<String>(
-                              decoration: const InputDecoration(labelText: 'City', border: OutlineInputBorder()),
-                              value: _selectedCity,
-                              items: data.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                              onChanged: (val) => setState(() => _selectedCity = val),
-                            ),
-                            loading: () => const CircularProgressIndicator(),
-                            error: (e, s) => const Text('Error'),
+                          child: DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(labelText: 'City', border: OutlineInputBorder()),
+                            value: _selectedCity,
+                            items: filteredCities.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                            onChanged: (val) => setState(() {
+                              _selectedCity = val;
+                              _isCustomCity = val == 'others';
+                            }),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(child: TextFormField(controller: _zipCtrl, decoration: const InputDecoration(labelText: 'Zip Code', border: OutlineInputBorder()))),
                       ],
                     ),
+                    if (_isCustomCity) ...[
+                      const SizedBox(height: 16),
+                      TextFormField(controller: _customCityCtrl, decoration: const InputDecoration(labelText: 'Specify Custom City', border: OutlineInputBorder())),
+                    ],
                     const SizedBox(height: 16),
                     Row(
                       children: [

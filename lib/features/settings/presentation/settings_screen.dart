@@ -37,15 +37,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           _buildSectionHeader(context, 'Preferences'),
-          _buildSettingsTile(
-            context,
-            icon: LucideIcons.bell,
-            title: 'Notifications',
-            subtitle: 'Available in Phase 2',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Notifications will be available in Phase 2')));
-            },
-          ),
+
           _buildSettingsTile(
             context,
             icon: LucideIcons.moon,
@@ -56,15 +48,7 @@ class SettingsScreen extends ConsumerWidget {
               ref.read(themeModeProvider.notifier).toggle(!isDarkMode);
             },
           ),
-          _buildSettingsTile(
-            context,
-            icon: LucideIcons.globe,
-            title: 'Language & Region',
-            subtitle: 'Available in Phase 2',
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Language & Region will be available in Phase 2')));
-            },
-          ),
+
           const SizedBox(height: 24),
           _buildSectionHeader(context, 'System'),
           _buildSettingsTile(

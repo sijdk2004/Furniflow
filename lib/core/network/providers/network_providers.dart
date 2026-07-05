@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../local_storage/secure_storage_service.dart';
 import '../../../features/auth/presentation/auth_provider.dart';
 import '../api_client.dart';
+import '../../config/env_config.dart';
 import '../interceptors/auth_interceptor.dart';
 import '../interceptors/error_interceptor.dart';
 
@@ -16,6 +17,7 @@ final authInterceptorProvider = Provider<AuthInterceptor>((ref) {
   
   // A dedicated internal Dio for the refresh request to avoid interceptor loops
   final refreshDio = Dio();
+  refreshDio.options.baseUrl = EnvConfig.baseUrl;
   
   return AuthInterceptor(secureStorage, refreshDio, onLogout: () {
     // Global Logout Event Trigger

@@ -55,6 +55,6 @@ INSERT INTO role_permissions (role_id, permission_id, tenant_id)
 SELECT r.id, p.id, r.tenant_id
 FROM roles r
 CROSS JOIN permissions p
-WHERE r.role_code = 'SYSTEM_ADMIN' 
+WHERE r.role_code = 'PLATFORM_ADMIN' 
   AND p.permission_code IN ('MFG.PRD.VIEW', 'MFG.PRD.CREATE', 'MFG.PRD.UPDATE', 'MFG.PRD.DELETE')
 ON CONFLICT DO NOTHING;

@@ -29,12 +29,13 @@ func (r *ProductionOrderRepository) GetByID(id string, tenantID string) (*models
 	return &order, nil
 }
 
-func (r *ProductionOrderRepository) GetAll(tenantID string) ([]models.ProductionOrder, error) {
+func (r *ProductionOrderRepository) GetAll(tenantID string, status string) ([]models.ProductionOrder, error) {
 	var orders []models.ProductionOrder
-	err := r.db.Preload("Product").
-		Where("tenant_id = ?", tenantID).
-		Order("created_on desc").
-		Find(&orders).Error
+	query := r.db.Preload("Product").Where("tenant_id = ?", tenantID)
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	err := query.Order("created_on desc").Find(&orders).Error
 	return orders, err
 }
 

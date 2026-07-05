@@ -6,10 +6,7 @@ class RbacState {
   RbacState({required this.permissions});
 
   bool hasPermission(String requiredPermission) {
-    // PLATFORM_ADMIN overrides
-    if (permissions.contains('PLATFORM_ADMIN') || permissions.contains('SYS_ADMIN')) {
-      return true;
-    }
+
     return permissions.contains(requiredPermission);
   }
 }

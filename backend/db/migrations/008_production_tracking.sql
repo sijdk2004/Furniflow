@@ -72,6 +72,6 @@ INSERT INTO role_permissions (role_id, permission_id, tenant_id)
 SELECT r.id, p.id, 'SYSTEM_TENANT'
 FROM roles r
 CROSS JOIN permissions p
-WHERE r.role_code = 'SYS_ADMIN'
+WHERE r.role_code = 'PLATFORM_ADMIN'
 AND p.permission_code LIKE 'MFG.TRK.%'
 ON CONFLICT DO NOTHING;

@@ -9,6 +9,7 @@ import '../../notifications/presentation/notification_drawer.dart';
 import '../../ai_assistant/presentation/ai_assistant_panel.dart';
 import '../../auth/presentation/auth_provider.dart';
 import '../presentation/menu_provider.dart';
+import '../../settings/data/settings_provider.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -121,32 +122,6 @@ class _AppShellState extends ConsumerState<AppShell> {
     final theme = Theme.of(context);
     return [
       IconButton(
-        icon: Icon(theme.brightness == Brightness.dark ? LucideIcons.sun : LucideIcons.moon),
-        tooltip: 'Toggle Theme',
-        onPressed: () {
-          ref.read(themeModeProvider.notifier).toggle(theme.brightness != Brightness.dark);
-        },
-      ),
-      const SizedBox(width: 8),
-      IconButton(
-        icon: const Icon(LucideIcons.bell),
-        tooltip: 'Notifications',
-        onPressed: () {
-          setState(() => _currentEndDrawer = NotificationDrawer(onClose: () => _scaffoldKey.currentState?.closeEndDrawer()));
-          _scaffoldKey.currentState?.openEndDrawer();
-        },
-      ),
-      const SizedBox(width: 8),
-      IconButton(
-        icon: const Icon(LucideIcons.sparkles, color: Colors.purple),
-        tooltip: 'FurniFlow AI',
-        onPressed: () {
-          setState(() => _currentEndDrawer = AiAssistantPanel(onClose: () => _scaffoldKey.currentState?.closeEndDrawer()));
-          _scaffoldKey.currentState?.openEndDrawer();
-        },
-      ),
-      const SizedBox(width: 8),
-      IconButton(
         icon: const Icon(LucideIcons.user),
         onPressed: () => _showProfileDialog(context),
       ),
@@ -160,10 +135,12 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   Widget _buildSidebar(BuildContext context, ThemeData theme) {
-    return Container(
-      width: 260,
+    return Material(
       color: theme.colorScheme.surface,
-      child: _buildSidebarContent(context, theme),
+      child: SizedBox(
+        width: 260,
+        child: _buildSidebarContent(context, theme),
+      ),
     );
   }
 
@@ -243,9 +220,13 @@ class _AppShellState extends ConsumerState<AppShell> {
     return Theme(
       data: theme.copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
+        key: Key('$groupName-$isExpanded'),
         initiallyExpanded: isExpanded,
         onExpansionChanged: (expanded) {
           setState(() {
+            if (expanded) {
+              _expandedGroups.forEach((k, v) => _expandedGroups[k] = false);
+            }
             _expandedGroups[groupName] = expanded;
           });
         },
@@ -259,7 +240,17 @@ class _AppShellState extends ConsumerState<AppShell> {
         ),
         tilePadding: const EdgeInsets.symmetric(horizontal: 12),
         childrenPadding: const EdgeInsets.only(left: 24),
-        children: items.map((m) => _buildNavItem(context, m.title, _getIcon(m.icon), m.route, currentPath)).toList(),
+        children: () {
+          final sortedItems = List<MenuItem>.from(items);
+          if (groupName == 'Dashboards') {
+            sortedItems.sort((a, b) {
+              if (a.title == 'CEO Dashboard') return -1;
+              if (b.title == 'CEO Dashboard') return 1;
+              return 0; // maintain original order for others
+            });
+          }
+          return sortedItems.map((m) => _buildNavItem(context, m.title, _getIcon(m.icon), m.route, currentPath)).toList();
+        }(),
       ),
     );
   }
@@ -334,19 +325,63 @@ class _AppShellState extends ConsumerState<AppShell> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircleAvatar(radius: 40, backgroundColor: Colors.blue, child: Text('SA', style: TextStyle(fontSize: 24, color: Colors.white))),
-              const SizedBox(height: 16),
-              const Text('System Administrator', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const Text('admin@furniflow.com', style: TextStyle(color: Colors.grey)),
-              const Divider(height: 32),
-              const ListTile(leading: Icon(LucideIcons.building), title: Text('Department'), subtitle: Text('IT Operations')),
-              const ListTile(leading: Icon(LucideIcons.mapPin), title: Text('Location'), subtitle: Text('Headquarters - Block A')),
+              Consumer(
+                builder: (context, ref, child) {
+                  final profileAsync = ref.watch(profileProvider);
+                  return profileAsync.when(
+                    data: (user) {
+                      final lastNameStr = user.lastName ?? '';
+                      final departmentStr = user.department ?? '';
+                      
+                      final initials = '${user.firstName.isNotEmpty ? user.firstName[0] : ''}${lastNameStr.isNotEmpty ? lastNameStr[0] : ''}'.toUpperCase();
+                      final fullName = '${user.firstName} $lastNameStr'.trim();
+                      return Column(
+                        children: [
+                          CircleAvatar(radius: 40, backgroundColor: Colors.blue, child: Text(initials.isEmpty ? 'U' : initials, style: const TextStyle(fontSize: 24, color: Colors.white))),
+                          const SizedBox(height: 16),
+                          Text(fullName.isEmpty ? 'User' : fullName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                          Text(user.email, style: const TextStyle(color: Colors.grey)),
+                          const Divider(height: 32),
+                          if (departmentStr.isNotEmpty)
+                            ListTile(leading: const Icon(LucideIcons.building), title: const Text('Department'), subtitle: Text(departmentStr)),
+                        ],
+                      );
+                    },
+                    loading: () => const Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (error, stack) => Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Text('Error: $error', style: const TextStyle(color: Colors.red)),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              Consumer(
+                builder: (context, ref, child) {
+                  final isDarkMode = ref.watch(themeModeProvider) == ThemeMode.dark;
+                  return SwitchListTile(
+                    title: const Text('Dark Mode'),
+                    subtitle: const Text('Toggle dark/light theme'),
+                    value: isDarkMode,
+                    onChanged: (val) {
+                      ref.read(themeModeProvider.notifier).toggle(val);
+                    },
+                    secondary: const Icon(LucideIcons.moon),
+                  );
+                },
+              ),
             ],
           ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close')),
-          ElevatedButton(onPressed: () => Navigator.pop(context), child: const Text('Edit Profile')),
+          ElevatedButton(onPressed: () {
+            Navigator.pop(context);
+            context.go('/settings/profile');
+          }, child: const Text('View Profile')),
         ],
       ),
     );

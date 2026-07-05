@@ -104,7 +104,7 @@ class _ManufacturingDashboardScreenState extends ConsumerState<ManufacturingDash
                                 const SizedBox(width: 16),
                                 Expanded(child: GradientKpiCard(title: 'Avg Production Time', value: '${(kpis['average_production_time'] ?? 0).toStringAsFixed(1)}h', subtitle: 'Per Order', icon: LucideIcons.clock, gradientColors: [Colors.purple, Colors.purple], onTap: () => {}).animate().fade(delay: 700.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
-                                Expanded(child: GradientKpiCard(title: 'Production Efficiency', value: '${(kpis['production_efficiency_percentage'] ?? 0).toStringAsFixed(1)}%', subtitle: 'Completion Rate', icon: LucideIcons.activity, gradientColors: [Colors.pink, Colors.pink], onTap: () => {}).animate().fade(delay: 800.ms).slideY(begin: 0.1)),
+                                Expanded(child: GradientKpiCard(title: 'Production Efficiency', value: '${(kpis['production_efficiency_percentage'] ?? 0).toStringAsFixed(2)}%', subtitle: 'Completion Rate', icon: LucideIcons.activity, gradientColors: [Colors.pink, Colors.pink], onTap: () => {}).animate().fade(delay: 800.ms).slideY(begin: 0.1)),
                               ],
                             ),
                           ],
@@ -126,7 +126,7 @@ class _ManufacturingDashboardScreenState extends ConsumerState<ManufacturingDash
                             const SizedBox(height: 16),
                             GradientKpiCard(title: 'Avg Production Time', value: '${(kpis['average_production_time'] ?? 0).toStringAsFixed(1)}h', subtitle: 'Per Order', icon: LucideIcons.clock, gradientColors: [Colors.purple, Colors.purple], onTap: () => {}),
                             const SizedBox(height: 16),
-                            GradientKpiCard(title: 'Production Efficiency', value: '${(kpis['production_efficiency_percentage'] ?? 0).toStringAsFixed(1)}%', subtitle: 'Completion Rate', icon: LucideIcons.activity, gradientColors: [Colors.pink, Colors.pink], onTap: () => {}),
+                            GradientKpiCard(title: 'Production Efficiency', value: '${(kpis['production_efficiency_percentage'] ?? 0).toStringAsFixed(2)}%', subtitle: 'Completion Rate', icon: LucideIcons.activity, gradientColors: [Colors.pink, Colors.pink], onTap: () => {}),
                           ],
                         );
                       }

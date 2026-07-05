@@ -31,6 +31,20 @@ class _BomViewScreenState extends ConsumerState<BomViewScreen> {
     }
   }
 
+  Future<void> _reviseBom() async {
+    try {
+      final newBomId = await ref.read(bomProvider.notifier).reviseBom(widget.bomId);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('BOM revised. You are now editing the Draft version.')));
+        context.pushReplacement('/bom/edit/$newBomId');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error revising BOM: $e')));
+      }
+    }
+  }
+
   Widget _buildNextAction(String currentStatus) {
     if (currentStatus == 'Draft') {
       return ElevatedButton.icon(
@@ -66,6 +80,27 @@ class _BomViewScreenState extends ConsumerState<BomViewScreen> {
           IconButton(
             icon: const Icon(LucideIcons.printer),
             onPressed: () {},
+          ),
+          bomsState.maybeWhen(
+            data: (boms) {
+              final bom = boms.firstWhere((b) => b.id == widget.bomId, orElse: () => throw Exception('Not found'));
+              if (bom.status == 'Approved' || bom.status == 'Active') {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: _reviseBom,
+                    icon: const Icon(LucideIcons.copy, size: 18),
+                    label: const Text('Revise BOM'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primaryContainer,
+                      foregroundColor: theme.colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                );
+              }
+              return const SizedBox.shrink();
+            },
+            orElse: () => const SizedBox.shrink(),
           ),
         ],
       ),

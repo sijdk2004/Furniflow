@@ -101,7 +101,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
                               children: [
                                 Expanded(child: GradientKpiCard(title: 'Today\'s Deliveries', value: '${kpis['todays_deliveries'] ?? 0}', subtitle: 'Due Today', icon: LucideIcons.calendarDays, gradientColors: [Colors.deepPurple, Colors.deepPurple], onTap: () => {}).animate().fade(delay: 500.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
-                                Expanded(child: GradientKpiCard(title: 'Delivery Success Rate', value: '${(kpis['delivery_success_rate'] ?? 0).toStringAsFixed(1)}%', subtitle: 'Success vs Cancelled', icon: LucideIcons.activity, gradientColors: [Colors.teal, Colors.teal], onTap: () => {}).animate().fade(delay: 600.ms).slideY(begin: 0.1)),
+                                Expanded(child: GradientKpiCard(title: 'Delivery Success Rate', value: '${(kpis['delivery_success_rate'] ?? 0).toStringAsFixed(2)}%', subtitle: 'Success vs Cancelled', icon: LucideIcons.activity, gradientColors: [Colors.teal, Colors.teal], onTap: () => {}).animate().fade(delay: 600.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
                                 Expanded(child: GradientKpiCard(title: 'Cancelled Deliveries', value: '${kpis['cancelled_deliveries'] ?? 0}', subtitle: 'Failed/Cancelled', icon: LucideIcons.xCircle, gradientColors: [Colors.redAccent, Colors.redAccent], onTap: () => context.go('/delivery?status=Cancelled')).animate().fade(delay: 700.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
@@ -123,7 +123,7 @@ class _DeliveryDashboardScreenState extends ConsumerState<DeliveryDashboardScree
                             const SizedBox(height: 16),
                             GradientKpiCard(title: 'Today\'s Deliveries', value: '${kpis['todays_deliveries'] ?? 0}', subtitle: 'Due Today', icon: LucideIcons.calendarDays, gradientColors: [Colors.deepPurple, Colors.deepPurple], onTap: () => {}),
                             const SizedBox(height: 16),
-                            GradientKpiCard(title: 'Delivery Success Rate', value: '${(kpis['delivery_success_rate'] ?? 0).toStringAsFixed(1)}%', subtitle: 'Success vs Cancelled', icon: LucideIcons.activity, gradientColors: [Colors.teal, Colors.teal], onTap: () => {}),
+                            GradientKpiCard(title: 'Delivery Success Rate', value: '${(kpis['delivery_success_rate'] ?? 0).toStringAsFixed(2)}%', subtitle: 'Success vs Cancelled', icon: LucideIcons.activity, gradientColors: [Colors.teal, Colors.teal], onTap: () => {}),
                             const SizedBox(height: 16),
                             GradientKpiCard(title: 'Cancelled Deliveries', value: '${kpis['cancelled_deliveries'] ?? 0}', subtitle: 'Failed/Cancelled', icon: LucideIcons.xCircle, gradientColors: [Colors.redAccent, Colors.redAccent], onTap: () => context.go('/delivery?status=Cancelled')),
                             const SizedBox(height: 16),

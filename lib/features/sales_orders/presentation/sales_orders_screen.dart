@@ -27,54 +27,43 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
     });
   }
 
+  // Generate a stable 6-digit numeric ID from UUID
+  String _displayId(String id) {
+    // Use last 6 alphanumeric chars of UUID for a compact, readable ID
+    final clean = id.replaceAll('-', '');
+    return clean.length >= 6 ? clean.substring(clean.length - 6).toUpperCase() : clean.toUpperCase();
+  }
+
   Widget _buildStatusBadge(String status) {
     Color bgColor;
     Color textColor;
-
     switch (status) {
       case 'Draft':
-        bgColor = Colors.grey.withOpacity(0.1);
-        textColor = Colors.grey.shade700;
-        break;
+        bgColor = Colors.grey.withOpacity(0.15); textColor = Colors.grey.shade600; break;
       case 'Confirmed':
-        bgColor = Colors.blue.withOpacity(0.1);
-        textColor = Colors.blue.shade700;
-        break;
+        bgColor = Colors.blue.withOpacity(0.15); textColor = Colors.blue.shade700; break;
       case 'In Production':
-        bgColor = Colors.purple.withOpacity(0.1);
-        textColor = Colors.purple.shade700;
-        break;
+        bgColor = Colors.purple.withOpacity(0.15); textColor = Colors.purple.shade700; break;
       case 'Ready For Delivery':
-        bgColor = Colors.orange.withOpacity(0.1);
-        textColor = Colors.orange.shade700;
-        break;
+        bgColor = Colors.orange.withOpacity(0.15); textColor = Colors.orange.shade700; break;
       case 'Delivered':
-        bgColor = Colors.green.withOpacity(0.1);
-        textColor = Colors.green.shade700;
-        break;
+        bgColor = Colors.green.withOpacity(0.15); textColor = Colors.green.shade700; break;
       case 'Cancelled':
-        bgColor = Colors.red.withOpacity(0.1);
-        textColor = Colors.red.shade700;
-        break;
+        bgColor = Colors.red.withOpacity(0.15); textColor = Colors.red.shade700; break;
       default:
-        bgColor = Colors.grey.withOpacity(0.1);
-        textColor = Colors.grey.shade700;
+        bgColor = Colors.grey.withOpacity(0.15); textColor = Colors.grey.shade600;
     }
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: textColor.withOpacity(0.2)),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
         status,
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: textColor, fontWeight: FontWeight.w600, fontSize: 12),
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
       ),
     );
   }
@@ -90,23 +79,26 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Sales Orders', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text('Sales Orders',
+                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    Text('Manage converted orders and track production', style: theme.textTheme.bodyMedium),
+                    Text('Manage converted orders and track production',
+                        style: theme.textTheme.bodyMedium),
                   ],
                 ),
-                // No Create button, generated from Quotations
               ],
             ).animate().fade().slideY(begin: -0.2),
           ),
-          
+
+          const SizedBox(height: 16),
+
           // Toolbar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -117,100 +109,76 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
                     constraints: const BoxConstraints(maxWidth: 400),
                     child: TextField(
                       onChanged: (value) => setState(() => _searchQuery = value),
-                      decoration: InputDecoration(
-                        hintText: 'Search orders by ID or customer...',
-                        prefixIcon: const Icon(LucideIcons.search, size: 20),
+                      decoration: const InputDecoration(
+                        hintText: 'Search by order ID or customer...',
+                        prefixIcon: Icon(LucideIcons.search, size: 18),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: () => SharedDialogs.showFilterDialog(context),
-                  icon: const Icon(LucideIcons.filter, size: 18),
+                  icon: const Icon(LucideIcons.filter, size: 16),
                   label: const Text('Filter'),
                 ),
               ],
             ).animate().fade(delay: 100.ms).slideY(begin: 0.1),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          // Content
+          // Table
           Expanded(
             child: asyncOrders.when(
               data: (data) {
                 final orders = data.where((o) {
-                  final matchesId = o.id.toLowerCase().contains(_searchQuery.toLowerCase());
-                  final customerName = o.customer?['name']?.toString().toLowerCase() ?? '';
-                  final matchesCustomer = customerName.contains(_searchQuery.toLowerCase());
-                  return matchesId || matchesCustomer;
+                  final id = _displayId(o.id);
+                  final q = _searchQuery.toLowerCase();
+                  final cusName = o.customer?['name']?.toString().toLowerCase() ?? '';
+                  return o.id.toLowerCase().contains(q) ||
+                      id.toLowerCase().contains(q) ||
+                      cusName.contains(q);
                 }).toList();
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Card(
-                    child: ListView(
+                    clipBehavior: Clip.hardEdge,
+                    child: Column(
                       children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columns: const [
-                              DataColumn(label: Text('Order ID', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Customer', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Date', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Expected Delivery', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Status', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
+                        // ── Header Row ──
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          color: theme.colorScheme.surfaceVariant.withOpacity(0.6),
+                          child: Row(
+                            children: [
+                              _hdr('SO#', flex: 10),
+                              _hdr('Customer', flex: 20),
+                              _hdr('Date', flex: 14),
+                              _hdr('Est. Delivery', flex: 14),
+                              _hdr('Amount', flex: 14),
+                              _hdr('Status', flex: 16),
+                              _hdr('', flex: 8),
                             ],
-                            rows: orders.map((o) {
-                              return DataRow(
-                                cells: [
-                                  DataCell(
-                                    Text(
-                                      o.id,
-                                      style: TextStyle(
-                                        color: theme.colorScheme.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                  DataCell(Text(o.customer?['name'] ?? 'Unknown Customer')),
-                                  DataCell(Text(_dateFormat.format(o.orderDate.toLocal()))),
-                                  DataCell(Text(o.expectedDeliveryDate != null 
-                                      ? _dateFormat.format(o.expectedDeliveryDate!.toLocal()) 
-                                      : 'Not Set')),
-                                  DataCell(Text(_currencyFormat.format(o.totalAmount))),
-                                  DataCell(_buildStatusBadge(o.status)),
-                                  DataCell(
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        IconButton(
-                                          icon: const Icon(LucideIcons.eye, size: 18),
-                                          tooltip: 'View Order',
-                                          onPressed: () {
-                                            context.push('/sales-orders/view/${o.id}');
-                                          },
-                                        ),
-                                        if (o.status == 'Draft')
-                                          IconButton(
-                                            icon: const Icon(LucideIcons.penLine, size: 18),
-                                            tooltip: 'Edit Order',
-                                            onPressed: () {
-                                              context.push('/sales-orders/edit/${o.id}');
-                                            },
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }).toList(),
                           ),
+                        ),
+                        const Divider(height: 1),
+
+                        // ── Data Rows ──
+                        Expanded(
+                          child: orders.isEmpty
+                              ? const Center(child: Text('No orders found'))
+                              : ListView.separated(
+                                  itemCount: orders.length,
+                                  separatorBuilder: (_, __) => const Divider(height: 1),
+                                  itemBuilder: (context, i) {
+                                    final o = orders[i];
+                                    return _buildRow(o, theme);
+                                  },
+                                ),
                         ),
                       ],
                     ),
@@ -219,6 +187,113 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, st) => Center(child: Text('Error: $e')),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _hdr(String label, {required int flex}) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildRow(dynamic o, ThemeData theme) {
+    final estDelivery = o.expectedDeliveryDate != null
+        ? _dateFormat.format(o.expectedDeliveryDate!.toLocal())
+        : 'Not Set';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          // SO#
+          Expanded(
+            flex: 10,
+            child: Text(
+              _displayId(o.id),
+              style: TextStyle(
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.bold,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Customer
+          Expanded(
+            flex: 20,
+            child: Text(
+              o.customer?['name'] ?? 'Unknown',
+              style: theme.textTheme.bodyMedium,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+          // Date
+          Expanded(
+            flex: 14,
+            child: Text(
+              _dateFormat.format(o.orderDate.toLocal()),
+              style: theme.textTheme.bodyMedium,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Est. Delivery
+          Expanded(
+            flex: 14,
+            child: Text(
+              estDelivery,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: estDelivery == 'Not Set' ? Colors.grey : null,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Amount
+          Expanded(
+            flex: 14,
+            child: Text(
+              _currencyFormat.format(o.totalAmount),
+              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Status
+          Expanded(
+            flex: 16,
+            child: _buildStatusBadge(o.status),
+          ),
+          // Actions
+          Expanded(
+            flex: 8,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(LucideIcons.eye, size: 16),
+                  tooltip: 'View Order',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                  onPressed: () => context.push('/sales-orders/view/${o.id}'),
+                ),
+                if (o.status == 'Draft')
+                  IconButton(
+                    icon: const Icon(LucideIcons.penLine, size: 16),
+                    tooltip: 'Edit Order',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    onPressed: () => context.push('/sales-orders/edit/${o.id}'),
+                  ),
+              ],
             ),
           ),
         ],

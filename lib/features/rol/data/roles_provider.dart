@@ -10,7 +10,7 @@ final rolesProvider = FutureProvider<List<RoleModel>>((ref) async {
   final response = await apiClient.get('/v1/system/roles');
   
   if (response.data['success'] == true) {
-    final List<dynamic> data = response.data['data'];
+    final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => RoleModel.fromJson(json)).toList();
   } else {
     throw Exception(response.data['error'] ?? 'Failed to load roles');
@@ -30,7 +30,7 @@ final allPermissionsProvider = FutureProvider<List<PermissionModel>>((ref) async
   final apiClient = ref.watch(apiClientProvider);
   final response = await apiClient.get('/v1/system/roles/permissions');
   if (response.data['success'] == true) {
-    final List<dynamic> data = response.data['data'];
+    final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => PermissionModel.fromJson(json)).toList();
   }
   throw Exception(response.data['error'] ?? 'Failed to load permissions');
@@ -40,7 +40,7 @@ final rolePermissionsProvider = FutureProvider.family<List<PermissionModel>, Str
   final apiClient = ref.watch(apiClientProvider);
   final response = await apiClient.get('/v1/system/roles/$roleId/permissions');
   if (response.data['success'] == true) {
-    final List<dynamic> data = response.data['data'];
+    final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => PermissionModel.fromJson(json)).toList();
   }
   throw Exception(response.data['error'] ?? 'Failed to load role permissions');
@@ -50,7 +50,7 @@ final roleUsersProvider = FutureProvider.family<List<UserModel>, String>((ref, r
   final apiClient = ref.watch(apiClientProvider);
   final response = await apiClient.get('/v1/system/roles/$roleId/users');
   if (response.data['success'] == true) {
-    final List<dynamic> data = response.data['data'];
+    final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => UserModel.fromJson(json)).toList();
   }
   throw Exception(response.data['error'] ?? 'Failed to load role users');
@@ -60,7 +60,7 @@ final roleAuditLogsProvider = FutureProvider.family<List<AuditLogModel>, String>
   final apiClient = ref.watch(apiClientProvider);
   final response = await apiClient.get('/v1/system/roles/$roleId/audit-history');
   if (response.data['success'] == true) {
-    final List<dynamic> data = response.data['data'];
+    final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => AuditLogModel.fromJson(json)).toList();
   }
   throw Exception(response.data['error'] ?? 'Failed to load audit logs');

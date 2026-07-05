@@ -45,7 +45,7 @@ func (r *UserRepository) Create(user *models.User) error {
 }
 
 func (r *UserRepository) Update(user *models.User) error {
-	return r.db.Save(user).Error
+	return r.db.Omit("Roles").Save(user).Error
 }
 
 func (r *UserRepository) UpdateProfile(userID string, firstName string, lastName *string, email string, mobile *string, designation *string, department *string) error {

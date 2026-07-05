@@ -26,6 +26,10 @@ func (s *BOMService) CreateBOM(req *models.CreateBOMRequest, tenantID string, us
 	var items []models.BOMItem
 
 	for _, reqItem := range req.Items {
+		if reqItem.ComponentID == req.ProductID {
+			return nil, errors.New("circular dependency: a product cannot be a component of itself")
+		}
+
 		itemTotal := reqItem.Quantity * reqItem.UnitCost
 		totalMaterialCost += itemTotal
 
@@ -107,4 +111,8 @@ func (s *BOMService) UpdateStatus(id string, tenantID string, status string) err
 	}
 
 	return s.repo.UpdateStatus(id, tenantID, status)
+}
+
+func (s *BOMService) ReviseBOM(id string, tenantID string) (*models.BOM, error) {
+	return s.repo.Revise(id, tenantID)
 }

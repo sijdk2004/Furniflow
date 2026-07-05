@@ -286,10 +286,17 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
                         child: Card(
                           child: ListView(
                             children: [
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: DataTable(
-                                  columns: const [
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.topCenter,
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                      child: DataTable(
+                                        columnSpacing: 24,
+                                        horizontalMargin: 16,
+                                        columns: const [
                                     DataColumn(label: Text('Code', style: TextStyle(fontWeight: FontWeight.bold))),
                                     DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
                                     DataColumn(label: Text('Description', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -324,7 +331,10 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
                                       ],
                                     );
                                   }).toList(),
-                                ),
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

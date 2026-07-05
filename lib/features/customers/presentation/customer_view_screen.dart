@@ -38,14 +38,15 @@ class _CustomerViewScreenState extends ConsumerState<CustomerViewScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Customer Details')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 _buildRow('Name:', _customer.name),
                 _buildRow('Email:', _customer.email ?? '-'),
                 _buildRow('Phone:', _customer.phone ?? '-'),
@@ -62,12 +63,22 @@ class _CustomerViewScreenState extends ConsumerState<CustomerViewScreen> {
                 _buildRow('Credit Limit:', _customer.creditLimit.toString()),
                 _buildRow('Status:', _customer.isActive ? 'Active' : 'Inactive'),
                 const SizedBox(height: 24),
-                ElevatedButton(onPressed: () => context.go('/customers'), child: const Text('Back to List')),
+                ElevatedButton(
+                  onPressed: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/customers');
+                    }
+                  }, 
+                  child: const Text('Back to List')
+                ),
               ],
             ),
           ),
         ),
       ),
+    ),
     );
   }
 

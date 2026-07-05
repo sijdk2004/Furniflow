@@ -10,6 +10,7 @@ type CustomerRequest struct {
 	CountryID      *string  `json:"country_id" validate:"omitempty,uuid"`
 	StateID        *string  `json:"state_id" validate:"omitempty,uuid"`
 	CityID         *string  `json:"city_id" validate:"omitempty,uuid"`
+	CustomCityName *string  `json:"custom_city_name" validate:"omitempty,max=100"`
 	ZipCode        *string  `json:"zip_code" validate:"omitempty,max=20"`
 	TaxID          *string  `json:"tax_id" validate:"omitempty,max=50"`
 	CreditLimit    float64  `json:"credit_limit" validate:"omitempty,min=0"`

@@ -56,4 +56,19 @@ class BomNotifier extends AsyncNotifier<List<Bom>> {
       rethrow;
     }
   }
+
+  Future<String> reviseBom(String id) async {
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      final response = await apiClient.post('/v1/system/manufacturing/boms/$id/revise');
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        await loadBoms();
+        return response.data['data']['id'];
+      } else {
+        throw Exception('Failed to revise BOM');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

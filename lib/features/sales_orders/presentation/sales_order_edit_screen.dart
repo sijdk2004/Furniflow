@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../data/sales_order_provider.dart';
+import '../../../core/utils/shared_dialogs.dart';
 
 class SalesOrderEditScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -56,9 +57,7 @@ class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
       );
       if (mounted) {
         context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sales Order updated successfully')),
-        );
+        SharedDialogs.showSuccessSnackbar(context, 'Sales Order updated successfully');
       }
     } catch (e) {
       if (mounted) {

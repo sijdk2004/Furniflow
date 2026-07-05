@@ -40,7 +40,7 @@ class SalesDashboardState {
   }
 }
 
-class SalesDashboardNotifier extends AsyncNotifier<SalesDashboardState> {
+class SalesDashboardNotifier extends AutoDisposeAsyncNotifier<SalesDashboardState> {
   late SalesDashboardRepository _repository;
 
   @override
@@ -69,7 +69,7 @@ class SalesDashboardNotifier extends AsyncNotifier<SalesDashboardState> {
     final currentState = state.value;
     state = AsyncValue.data(currentState?.copyWith(timeframe: timeframe) ?? SalesDashboardState(timeframe: timeframe));
     
-    state = const AsyncValue.loading();
+    state = const AsyncLoading<SalesDashboardState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() => _fetchSalesDashboardData(
       timeframe,
       customerId: currentState?.customerId,
@@ -97,7 +97,7 @@ class SalesDashboardNotifier extends AsyncNotifier<SalesDashboardState> {
   }
 }
 
-final salesDashboardNotifierProvider = AsyncNotifierProvider<SalesDashboardNotifier, SalesDashboardState>(() {
+final salesDashboardNotifierProvider = AsyncNotifierProvider.autoDispose<SalesDashboardNotifier, SalesDashboardState>(() {
   return SalesDashboardNotifier();
 });
 
@@ -121,6 +121,9 @@ class SalesDashboardRepository {
       '/v1/system/sales-dashboard/data',
       queryParameters: queryParameters,
     );
-    return response.data['data'] as Map<String, dynamic>;
+    if (response.data != null && response.data['success'] == true && response.data['data'] != null) {
+      return Map<String, dynamic>.from(response.data['data'] as Map);
+    }
+    return {};
   }
 }

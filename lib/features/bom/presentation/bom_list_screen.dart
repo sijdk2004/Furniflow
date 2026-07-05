@@ -142,10 +142,17 @@ class _BomListScreenState extends ConsumerState<BomListScreen> {
                   child: Card(
                     child: ListView(
                       children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columns: const [
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            return FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.topCenter,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                child: DataTable(
+                                  columnSpacing: 24,
+                                  horizontalMargin: 16,
+                                  columns: const [
                               DataColumn(label: Text('Product', style: TextStyle(fontWeight: FontWeight.bold))),
                               DataColumn(label: Text('Version', style: TextStyle(fontWeight: FontWeight.bold))),
                               DataColumn(label: Text('Date Created', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -190,7 +197,10 @@ class _BomListScreenState extends ConsumerState<BomListScreen> {
                                 ],
                               );
                             }).toList(),
-                          ),
+                                ),
+                              ),
+                            );
+                          }
                         ),
                       ],
                     ),

@@ -37,7 +37,7 @@ ON CONFLICT (permission_code) DO NOTHING;
 
 -- Default Menus
 INSERT INTO menus (menu_code, menu_name, module_code, screen_code, icon_name, sort_order) VALUES
-('MENU_DASHBOARD', 'Dashboard', 'DSH', 'DSH_HOME', 'dashboard', 10),
+('MENU_DASHBOARD', 'CEO Dashboard', 'DSH', 'DSH_HOME', 'dashboard', 10),
 ('MENU_MFG_DASHBOARD', 'Mfg Dashboard', 'MFG', 'MFG_DSH', 'factory', 15),
 ('MENU_CUSTOMERS', 'Customers', 'CUS', 'CUS_LIST', 'users', 20),
 ('MENU_PRODUCTS', 'Catalog', 'PRD', 'PRD_LIST', 'box', 30),

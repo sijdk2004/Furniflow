@@ -5,6 +5,6 @@ class ApiConstants {
   static const String orgIdHeader = 'X-Organization-ID';
 
   // Endpoints
-  static const String loginEndpoint = '/auth/login';
-  static const String refreshEndpoint = '/auth/refresh';
+  static const String loginEndpoint = '/v1/auth/login';
+  static const String refreshEndpoint = '/v1/auth/refresh';
 }

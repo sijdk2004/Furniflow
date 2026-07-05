@@ -88,3 +88,15 @@ func (h *BOMHandler) UpdateStatus(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"success": true, "message": "Status updated successfully"})
 }
+
+func (h *BOMHandler) ReviseBOM(c *fiber.Ctx) error {
+	tenantID := c.Locals("tenant_id").(string)
+	id := c.Params("id")
+
+	bom, err := h.service.ReviseBOM(id, tenantID)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to revise BOM", "details": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"success": true, "data": bom})
+}

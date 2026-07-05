@@ -31,7 +31,7 @@ class ManufacturingDashboardState {
   }
 }
 
-class ManufacturingDashboardNotifier extends AsyncNotifier<ManufacturingDashboardState> {
+class ManufacturingDashboardNotifier extends AutoDisposeAsyncNotifier<ManufacturingDashboardState> {
   @override
   FutureOr<ManufacturingDashboardState> build() async {
     return _fetchData('YTD');
@@ -43,7 +43,7 @@ class ManufacturingDashboardNotifier extends AsyncNotifier<ManufacturingDashboar
       final response = await apiClient.get('/v1/system/manufacturing-dashboard/data', queryParameters: {'timeframe': timeframe});
       
       if (response.data != null && response.data['success'] == true) {
-        return ManufacturingDashboardState(data: response.data['data'], timeframe: timeframe);
+        return ManufacturingDashboardState(data: Map<String, dynamic>.from(response.data['data'] as Map), timeframe: timeframe);
       } else {
         throw Exception('Failed to load manufacturing dashboard data');
       }
@@ -53,16 +53,11 @@ class ManufacturingDashboardNotifier extends AsyncNotifier<ManufacturingDashboar
   }
 
   Future<void> setTimeframe(String timeframe) async {
-    state = const AsyncValue.loading();
-    try {
-      final data = await _fetchData(timeframe);
-      state = AsyncValue.data(data);
-    } catch (e, stack) {
-      state = AsyncValue.error(e, stack);
-    }
+    state = const AsyncLoading<ManufacturingDashboardState>().copyWithPrevious(state);
+    state = await AsyncValue.guard(() => _fetchData(timeframe));
   }
 }
 
-final manufacturingDashboardNotifierProvider = AsyncNotifierProvider<ManufacturingDashboardNotifier, ManufacturingDashboardState>(() {
+final manufacturingDashboardNotifierProvider = AsyncNotifierProvider.autoDispose<ManufacturingDashboardNotifier, ManufacturingDashboardState>(() {
   return ManufacturingDashboardNotifier();
 });

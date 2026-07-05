@@ -43,8 +43,9 @@ func (h *ProductionOrderHandler) CreateProductionOrder(c *fiber.Ctx) error {
 
 func (h *ProductionOrderHandler) GetProductionOrders(c *fiber.Ctx) error {
 	tenantID := c.Locals("tenant_id").(string)
+	status := c.Query("status")
 	
-	orders, err := h.service.GetProductionOrders(tenantID)
+	orders, err := h.service.GetProductionOrders(tenantID, status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

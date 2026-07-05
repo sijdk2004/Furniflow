@@ -61,7 +61,7 @@ DO $$
 DECLARE
     admin_role_id UUID;
 BEGIN
-    SELECT id INTO admin_role_id FROM roles WHERE role_code = 'SYS_ADMIN' AND tenant_id = 'SYSTEM_TENANT';
+    SELECT id INTO admin_role_id FROM roles WHERE role_code = 'PLATFORM_ADMIN' AND tenant_id = 'SYSTEM_TENANT';
     
     IF admin_role_id IS NOT NULL THEN
         INSERT INTO role_permissions (tenant_id, role_id, permission_id)

@@ -97,3 +97,10 @@ final productionOrderByIdProvider = FutureProvider.family<ProductionOrder, Strin
   final response = await apiClient.get('/v1/system/manufacturing/production-orders/$id');
   return ProductionOrder.fromJson(response.data['data']);
 });
+
+final completedProductionOrdersProvider = FutureProvider<List<ProductionOrder>>((ref) async {
+  final apiClient = ref.watch(apiClientProvider);
+  final response = await apiClient.get('/v1/system/manufacturing/production-orders?status=Completed');
+  final data = response.data['data'] as List;
+  return data.map((json) => ProductionOrder.fromJson(json)).toList();
+});

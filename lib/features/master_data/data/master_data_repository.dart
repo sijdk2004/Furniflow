@@ -9,7 +9,7 @@ class MasterDataRepository {
   MasterDataRepository(this._apiClient);
 
   Future<List<MasterDataModel>> getMasterData(String type) async {
-    final response = await _apiClient.get('/v1/system/masters/$type');
+    final response = await _apiClient.get('/v1/system/masters/$type?_cb=${DateTime.now().millisecondsSinceEpoch}');
     final dataList = response.data['data'] as List;
     return dataList.map((e) => MasterDataModel.fromJson(e)).toList();
   }

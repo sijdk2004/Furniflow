@@ -65,7 +65,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       body: profileAsyncValue.when(
         data: (user) {
           if (!_loading && _firstNameCtrl.text.isEmpty && user.firstName.isNotEmpty) {
-            _loadData(user);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _loadData(user);
+            });
           }
           return Form(
             key: _formKey,

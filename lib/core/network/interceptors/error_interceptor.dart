@@ -25,8 +25,12 @@ class ErrorInterceptor extends Interceptor {
 
         switch (statusCode) {
           case 401:
-            // AuthInterceptor handles retry; if it reaches here, refresh failed.
-            throw UnauthorizedException(message);
+            // Prevent unhandled exception crashing DWDS
+            return handler.resolve(Response(
+              requestOptions: err.requestOptions,
+              statusCode: 401,
+              data: err.response?.data,
+            ));
           case 403:
             throw ForbiddenException(message);
           case 404:

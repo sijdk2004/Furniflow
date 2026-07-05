@@ -23,7 +23,7 @@ class DashboardState {
   }
 }
 
-class DashboardNotifier extends AsyncNotifier<DashboardState> {
+class DashboardNotifier extends AutoDisposeAsyncNotifier<DashboardState> {
   late DashboardRepository _repository;
 
   @override
@@ -42,12 +42,12 @@ class DashboardNotifier extends AsyncNotifier<DashboardState> {
     final oldData = state.value?.data;
     state = AsyncValue.data(DashboardState(data: oldData, timeframe: timeframe));
     
-    state = const AsyncValue.loading();
+    state = const AsyncLoading<DashboardState>().copyWithPrevious(state);
     state = await AsyncValue.guard(() => _fetchDashboardData(timeframe));
   }
 }
 
-final dashboardNotifierProvider = AsyncNotifierProvider<DashboardNotifier, DashboardState>(() {
+final dashboardNotifierProvider = AsyncNotifierProvider.autoDispose<DashboardNotifier, DashboardState>(() {
   return DashboardNotifier();
 });
 
@@ -61,6 +61,9 @@ class DashboardRepository {
       '/v1/system/dashboard/data',
       queryParameters: {'timeframe': timeframe},
     );
-    return response.data['data'] as Map<String, dynamic>;
+    if (response.data != null && response.data['success'] == true && response.data['data'] != null) {
+      return Map<String, dynamic>.from(response.data['data'] as Map);
+    }
+    return {};
   }
 }

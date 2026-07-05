@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../data/quotation_api_provider.dart';
 import '../../customers/data/customer_provider.dart';
 import '../../catalog/data/product_api_provider.dart';
-
+import '../../../core/utils/shared_dialogs.dart';
 class QuotationFormScreen extends ConsumerStatefulWidget {
   final String? id;
   const QuotationFormScreen({super.key, this.id});
@@ -79,7 +79,7 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
     
     final payload = {
       'customer_id': _selectedCustomer,
-      'valid_until': _validUntil.toIso8601String(),
+      'valid_until': '${_validUntil.toUtc().toIso8601String().split('T')[0]}T00:00:00Z',
       'discount': double.tryParse(_discountCtrl.text) ?? 0.0,
       'tax': double.tryParse(_taxCtrl.text) ?? 0.0,
       'notes': _notesCtrl.text,
@@ -98,6 +98,7 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
       }
       if (mounted) {
         ref.refresh(quotationsApiProvider);
+        SharedDialogs.showSuccessSnackbar(context, 'Quotation saved successfully');
         context.go('/quotations');
       }
     } catch (e) {
@@ -143,8 +144,17 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                                 onChanged: (val) => setState(() => _selectedCustomer = val),
                                 validator: (v) => v == null ? 'Required' : null,
                               ),
-                              loading: () => const CircularProgressIndicator(),
-                              error: (e, s) => const Text('Error loading customers'),
+                              loading: () => DropdownButtonFormField<String>(
+                                decoration: const InputDecoration(labelText: 'Customer *', border: OutlineInputBorder()),
+                                items: const [],
+                                onChanged: null,
+                                hint: const Text('Loading...'),
+                              ),
+                              error: (e, s) => DropdownButtonFormField<String>(
+                                decoration: const InputDecoration(labelText: 'Customer *', border: OutlineInputBorder(), errorText: 'Failed to load'),
+                                items: const [],
+                                onChanged: null,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -203,8 +213,17 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                                       });
                                     },
                                   ),
-                                  loading: () => const CircularProgressIndicator(),
-                                  error: (e, s) => const Text('Error loading products'),
+                                  loading: () => DropdownButtonFormField<String>(
+                                    decoration: const InputDecoration(labelText: 'Product', border: OutlineInputBorder()),
+                                    items: const [],
+                                    onChanged: null,
+                                    hint: const Text('Loading...'),
+                                  ),
+                                  error: (e, s) => DropdownButtonFormField<String>(
+                                    decoration: const InputDecoration(labelText: 'Product', border: OutlineInputBorder(), errorText: 'Failed to load'),
+                                    items: const [],
+                                    onChanged: null,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 8),
@@ -310,8 +329,8 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
-                                          const Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                          Text('\$${NumberFormat('#,##0.00').format(total)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                          Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
+                                          Text('\$${NumberFormat('#,##0.00').format(total)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
                                         ],
                                       ),
                                     );

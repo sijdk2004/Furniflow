@@ -62,6 +62,7 @@ class AuthInterceptor extends Interceptor {
           return handler.resolve(retryResponse);
         } catch (e) {
           if (e is DioException) {
+            _onLogout();
             return super.onError(e, handler);
           }
         }
@@ -83,9 +84,9 @@ class AuthInterceptor extends Interceptor {
         data: {'refresh_token': refreshToken},
       );
 
-      if (response.statusCode == 200) {
-        final newAccessToken = response.data['access_token'];
-        final newRefreshToken = response.data['refresh_token'];
+      if (response.statusCode == 200 && response.data['success'] == true && response.data['data'] != null) {
+        final newAccessToken = response.data['data']['access_token'];
+        final newRefreshToken = response.data['data']['refresh_token'];
         if (newAccessToken != null && newRefreshToken != null) {
           await _secureStorage.saveTokens(
             accessToken: newAccessToken,

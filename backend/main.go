@@ -126,6 +126,7 @@ func main() {
 
 	// Static Files
 	app.Static("/uploads", "./uploads")
+	app.Static("/", "../frontend_build")
 
 	// API Routes
 	api := app.Group("/v1")
@@ -134,16 +135,17 @@ func main() {
 	auth.Post("/login", authHandler.Login)
 	auth.Post("/refresh", authHandler.Refresh)
 
-	protectedAuth := api.Group("/auth", middleware.JWTProtected(string(services.JWTSecret)))
-	protectedAuth.Get("/profile", authHandler.GetProfile)
-	protectedAuth.Put("/profile", authHandler.UpdateProfile)
-	protectedAuth.Post("/change-password", authHandler.ChangePassword)
-
 	// Set JWT Secret for Auth Service
 	jwtSecretEnv := os.Getenv("JWT_SECRET")
 	if jwtSecretEnv != "" {
 		services.JWTSecret = []byte(jwtSecretEnv)
 	}
+
+	protectedAuth := api.Group("/auth", middleware.JWTProtected(string(services.JWTSecret)))
+	protectedAuth.Get("/profile", authHandler.GetProfile)
+	protectedAuth.Get("/users/:id", authHandler.GetProfile) // Temporary alias for GetUserByID
+	protectedAuth.Put("/profile", authHandler.UpdateProfile)
+	protectedAuth.Post("/change-password", authHandler.ChangePassword)
 
 	// Protected Routes
 	protected := api.Group("/system", middleware.JWTProtected(string(services.JWTSecret)))
@@ -225,6 +227,7 @@ func main() {
 	boms.Post("/", middleware.CheckPermission("MFG.BOM.CREATE"), bomHandler.CreateBOM)
 	boms.Get("/:id", middleware.CheckPermission("MFG.BOM.VIEW"), bomHandler.GetBOM)
 	boms.Patch("/:id/status", middleware.CheckPermission("MFG.BOM.UPDATE"), bomHandler.UpdateStatus)
+	boms.Post("/:id/revise", middleware.CheckPermission("MFG.BOM.CREATE"), bomHandler.ReviseBOM)
 
 	prodOrders := manufacturing.Group("/production-orders")
 	prodOrders.Get("/", middleware.CheckPermission("MFG.PRD.VIEW"), productionOrderHandler.GetProductionOrders)
@@ -250,9 +253,14 @@ func main() {
 	uploads := protected.Group("/upload")
 	uploads.Post("/image", uploadHandler.UploadImage)
 
+	// Catch-all route for SPA
+	app.Get("/*", func(c *fiber.Ctx) error {
+		return c.SendFile("../frontend_build/index.html")
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000"
+		port = "5181"
 	}
 	app.Listen(":" + port)
 }

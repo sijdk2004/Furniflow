@@ -1,8 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import '../../../core/local_storage/secure_storage_service.dart';
 import '../../../core/network/providers/network_providers.dart';
 import '../data/auth_repository.dart';
 import 'rbac_provider.dart';
+import '../../dashboard/data/dashboard_provider.dart';
+import '../../dashboard/data/sales_dashboard_provider.dart';
+import '../../dashboard/data/manufacturing_dashboard_provider.dart';
+import '../../dashboard/data/delivery_dashboard_provider.dart';
 
 enum AuthStateStatus { initial, authenticated, unauthenticated, loading, error }
 
@@ -56,15 +61,20 @@ class AuthNotifier extends Notifier<AuthState> {
       await _secureStorage.savePermissions(response.permissions);
       
       state = AuthState(status: AuthStateStatus.authenticated);
+    } on DioException catch (e) {
+      final msg = e.response?.data?['error'] ?? 'Login failed. Please check your credentials.';
+      state = AuthState(status: AuthStateStatus.error, errorMessage: msg.toString());
     } catch (e) {
-      state = AuthState(status: AuthStateStatus.error, errorMessage: e.toString());
+      state = AuthState(status: AuthStateStatus.error, errorMessage: 'An unexpected error occurred.');
     }
   }
 
   Future<void> logout() async {
+    if (state.status == AuthStateStatus.unauthenticated) return;
+    state = AuthState(status: AuthStateStatus.unauthenticated);
+    
     await _secureStorage.clearAll();
     ref.read(rbacProvider.notifier).clear();
-    state = AuthState(status: AuthStateStatus.unauthenticated);
   }
 }
 

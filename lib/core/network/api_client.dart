@@ -22,7 +22,7 @@ class ApiClient {
     _dio.interceptors.addAll([
       authInterceptor,
       errorInterceptor,
-      LogInterceptor(requestBody: true, responseBody: true),
+      // LogInterceptor(requestBody: true, responseBody: true), // Temporarily disabled to prevent DWDS crash
     ]);
   }
 
@@ -67,6 +67,19 @@ class ApiClient {
   }
 
   Never _throwNetworkException(DioException e) {
-    throw Exception(e.message ?? 'Unknown error occurred');
+    if (e.error is Exception) {
+      throw e.error as Exception;
+    }
+
+    String message = 'Unknown error occurred';
+    if (e.response?.data is Map<String, dynamic>) {
+      final data = e.response!.data as Map<String, dynamic>;
+      message = data['error'] ?? data['message'] ?? e.message ?? 'Server error ${e.response?.statusCode}';
+    } else if (e.response?.data is String) {
+      message = e.response!.data as String;
+    } else if (e.message != null) {
+      message = e.message!;
+    }
+    throw Exception(message);
   }
 }

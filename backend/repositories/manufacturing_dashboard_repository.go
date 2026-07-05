@@ -251,14 +251,15 @@ func (r *ManufacturingDashboardRepository) GetManufacturingDashboardData(tenantI
 	fetchOrders := func(statusFilter, stageFilter string, dest *[]models.DashboardProductionOrder) error {
 		q := r.db.Table("production_orders").
 			Joins("JOIN products p ON production_orders.product_id = p.id").
-			Select("SUBSTRING(CAST(production_orders.id AS VARCHAR), 1, 8) as order_number, p.product_name as product, production_orders.status, production_orders.created_on as start_date, production_orders.planned_end_date as target_date, 'In Progress' as current_stage")
+			Joins("LEFT JOIN production_trackings pt ON pt.production_order_id = production_orders.id").
+			Select("SUBSTRING(CAST(production_orders.id AS VARCHAR), 1, 8) as order_number, p.product_name as product, production_orders.status, production_orders.created_on as start_date, production_orders.planned_end_date as target_date, COALESCE(pt.current_stage, 'Not Started') as current_stage")
 		q = applyFilters(q, "production_orders")
 		if !startDate.IsZero() { q = q.Where("production_orders."+timeCondition, timeArgs...) }
 		if statusFilter != "" {
 			q = q.Where("production_orders.status = ?", statusFilter)
 		}
 		if stageFilter != "" {
-		    // Not perfectly mapped without joining tracking, keeping it simple for POC.
+			q = q.Where("pt.current_stage = ?", stageFilter)
 		}
 		return q.Order("production_orders.created_on DESC").Limit(5).Scan(dest).Error
 	}

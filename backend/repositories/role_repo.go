@@ -63,7 +63,21 @@ func (r *RoleRepository) UpdatePermissions(roleID string, tenantID string, permi
 		}
 	}
 
-	if err := r.db.Model(&role).Association("Permissions").Replace(&permissions); err != nil {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		// Clear existing permissions
+		if err := tx.Exec("DELETE FROM role_permissions WHERE role_id = ? AND tenant_id = ?", roleID, tenantID).Error; err != nil {
+			return err
+		}
+		
+		// Insert new permissions with tenant_id
+		for _, p := range permissions {
+			if err := tx.Exec("INSERT INTO role_permissions (role_id, permission_id, tenant_id) VALUES (?, ?, ?)", roleID, p.ID, tenantID).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 	
@@ -101,7 +115,21 @@ func (r *RoleRepository) UpdateUsers(roleID string, tenantID string, userIDs []s
 		}
 	}
 
-	if err := r.db.Model(&role).Association("Users").Replace(&users); err != nil {
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		// Clear existing users for this role
+		if err := tx.Exec("DELETE FROM user_roles WHERE role_id = ? AND tenant_id = ?", roleID, tenantID).Error; err != nil {
+			return err
+		}
+		
+		// Insert new users with tenant_id
+		for _, u := range users {
+			if err := tx.Exec("INSERT INTO user_roles (role_id, user_id, tenant_id) VALUES (?, ?, ?)", roleID, u.ID, tenantID).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
 		return err
 	}
 

@@ -98,10 +98,16 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                   child: Card(
                     child: ListView(
                       children: [
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: DataTable(
-                            columnSpacing: 32,
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            return FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.topCenter,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                                child: DataTable(
+                                  columnSpacing: 24,
+                                  horizontalMargin: 16,
                             headingTextStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                             dataTextStyle: theme.textTheme.bodyMedium,
                             dividerThickness: 1,
@@ -113,7 +119,10 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                               DataColumn(label: Text('')),
                             ],
                             rows: customers.map((c) => _buildDataRow(c, theme)).toList(),
-                          ),
+                                ),
+                              ),
+                            );
+                          }
                         ),
                       ],
                     ),
@@ -175,13 +184,26 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
         DataCell(
           PopupMenuButton<String>(
             icon: const Icon(LucideIcons.moreHorizontal, size: 20),
-            onSelected: (value) {
+            onSelected: (value) async {
               if (value == 'View Details') {
                 context.go('/customers/view/${customer.id}');
               } else if (value == 'Edit Customer') {
                 context.go('/customers/edit/${customer.id}');
               } else if (value == 'Delete') {
-                // Delete logic
+                final confirmed = await SharedDialogs.showDeleteConfirmation(context, itemName: 'customer');
+                if (confirmed == true) {
+                  try {
+                    await ref.read(customerRepositoryProvider).deleteCustomer(customer.id);
+                    ref.refresh(customersProvider);
+                    if (context.mounted) {
+                      SharedDialogs.showSuccessSnackbar(context, 'Customer deleted successfully');
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  }
+                }
               }
             },
             itemBuilder: (context) => [

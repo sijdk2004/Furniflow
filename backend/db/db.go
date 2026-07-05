@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+var dbInstance *gorm.DB
+
 func InitDB() (*gorm.DB, error) {
+	if dbInstance != nil {
+		return dbInstance, nil
+	}
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
@@ -43,5 +49,13 @@ func InitDB() (*gorm.DB, error) {
 		log.Println("Failed to initialize TenantPlugin: " + err.Error())
 	}
 
+	sqlDB, err := dbConn.DB()
+	if err == nil {
+		sqlDB.SetMaxOpenConns(20)
+		sqlDB.SetMaxIdleConns(5)
+		sqlDB.SetConnMaxLifetime(time.Hour)
+	}
+
+	dbInstance = dbConn
 	return dbConn, nil
 }

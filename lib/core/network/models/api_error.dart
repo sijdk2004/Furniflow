@@ -12,7 +12,7 @@ class ApiError {
   factory ApiError.fromJson(Map<String, dynamic> json) {
     return ApiError(
       code: json['code'] as String? ?? 'UNKNOWN_ERROR',
-      message: json['message'] as String? ?? 'An unexpected error occurred',
+      message: json['error'] as String? ?? json['message'] as String? ?? 'An unexpected error occurred',
       details: json['details'] as Map<String, dynamic>?,
     );
   }

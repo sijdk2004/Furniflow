@@ -49,6 +49,20 @@ func (s *CustomerService) Create(tenantID, userID string, req dtos.CustomerReque
 	if req.CityID != nil && *req.CityID != "" {
 		parsed, _ := uuid.Parse(*req.CityID)
 		cityID = &parsed
+	} else if req.CustomCityName != nil && *req.CustomCityName != "" && stateID != nil {
+		codeLen := len(*req.CustomCityName)
+		if codeLen > 3 {
+			codeLen = 3
+		}
+		newCity := models.City{
+			BaseModel: models.BaseModel{TenantID: tenantID},
+			StateID:   *stateID,
+			Name:      *req.CustomCityName,
+			Code:      "CUS_" + (*req.CustomCityName)[:codeLen],
+		}
+		if err := s.repo.CreateCity(&newCity); err == nil {
+			cityID = &newCity.ID
+		}
 	}
 
 	record := &models.Customer{
@@ -73,7 +87,10 @@ func (s *CustomerService) Create(tenantID, userID string, req dtos.CustomerReque
 	}
 
 	err := s.repo.Create(record)
-	return record, err
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.FindByID(record.ID.String(), tenantID)
 }
 
 func (s *CustomerService) Update(id, tenantID, userID string, req dtos.CustomerRequest) (*models.Customer, error) {
@@ -105,6 +122,20 @@ func (s *CustomerService) Update(id, tenantID, userID string, req dtos.CustomerR
 	if req.CityID != nil && *req.CityID != "" {
 		parsed, _ := uuid.Parse(*req.CityID)
 		cityID = &parsed
+	} else if req.CustomCityName != nil && *req.CustomCityName != "" && stateID != nil {
+		codeLen := len(*req.CustomCityName)
+		if codeLen > 3 {
+			codeLen = 3
+		}
+		newCity := models.City{
+			BaseModel: models.BaseModel{TenantID: tenantID},
+			StateID:   *stateID,
+			Name:      *req.CustomCityName,
+			Code:      "CUS_" + (*req.CustomCityName)[:codeLen],
+		}
+		if err := s.repo.CreateCity(&newCity); err == nil {
+			cityID = &newCity.ID
+		}
 	}
 
 	record.Name = req.Name
@@ -124,7 +155,10 @@ func (s *CustomerService) Update(id, tenantID, userID string, req dtos.CustomerR
 	record.UpdatedOn = time.Now()
 
 	err = s.repo.Update(record)
-	return record, err
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.FindByID(record.ID.String(), tenantID)
 }
 
 func (s *CustomerService) Delete(id, tenantID string) error {

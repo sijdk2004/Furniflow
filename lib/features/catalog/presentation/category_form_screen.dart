@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../master_data/data/master_data_repository.dart';
 import '../../master_data/presentation/master_data_provider.dart';
 import '../../master_data/domain/master_data_model.dart';
-
+import '../../../core/utils/shared_dialogs.dart';
 class CategoryFormScreen extends ConsumerStatefulWidget {
   final String? id;
   const CategoryFormScreen({super.key, this.id});
@@ -63,6 +63,7 @@ class _CategoryFormScreenState extends ConsumerState<CategoryFormScreen> {
       }
       if (mounted) {
         ref.refresh(masterDataProvider('product_categories'));
+        SharedDialogs.showSuccessSnackbar(context, 'Category saved successfully');
         context.go('/catalog/categories');
       }
     } catch (e) {

@@ -142,9 +142,9 @@ func (r *SalesDashboardRepository) GetSalesDashboardData(tenantID string, filter
 		return q.Count(&prevAq).Error
 	})
 
-	// KPI: Sales Orders & Revenue
+	// KPI: Sales Orders & Revenue (exclude Cancelled & Rejected)
 	g.Go(func() error {
-		q := r.db.Table("sales_orders")
+		q := r.db.Table("sales_orders").Where("status NOT IN ('Cancelled', 'Rejected')")
 		q = applyFilters(q, "sales_orders")
 		q = applyCustomerFilter(q, "customer_id")
 		q = applyStatusFilter(q, "status")
@@ -154,7 +154,7 @@ func (r *SalesDashboardRepository) GetSalesDashboardData(tenantID string, filter
 		return nil
 	})
 	g.Go(func() error {
-		q := r.db.Table("sales_orders")
+		q := r.db.Table("sales_orders").Where("status NOT IN ('Cancelled', 'Rejected')")
 		q = applyFilters(q, "sales_orders")
 		q = applyCustomerFilter(q, "customer_id")
 		q = applyStatusFilter(q, "status")
@@ -164,10 +164,10 @@ func (r *SalesDashboardRepository) GetSalesDashboardData(tenantID string, filter
 		return nil
 	})
 
-	// Monthly Revenue (Current Month)
+	// Monthly Revenue (Current Month, exclude Cancelled & Rejected)
 	g.Go(func() error {
 		startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
-		q := r.db.Table("sales_orders").Where("created_on >= ?", startOfMonth)
+		q := r.db.Table("sales_orders").Where("created_on >= ? AND status NOT IN ('Cancelled', 'Rejected')", startOfMonth)
 		q = applyFilters(q, "sales_orders")
 		q = applyCustomerFilter(q, "customer_id")
 		return q.Select("COALESCE(SUM(total_amount), 0)").Scan(&resp.KPIs.MonthlySalesRevenue).Error

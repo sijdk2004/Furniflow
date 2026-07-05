@@ -97,13 +97,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       children: [
                         Row(
                           children: [
-                            Expanded(child: GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${kpis['revenue_growth'] ?? 0}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')).animate().fade(delay: 100.ms).slideY(begin: 0.1)),
+                            Expanded(child: GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')).animate().fade(delay: 100.ms).slideY(begin: 0.1)),
                             const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${kpis['active_orders_growth'] ?? 0}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')).animate().fade(delay: 200.ms).slideY(begin: 0.1)),
+                            Expanded(child: GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['active_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')).animate().fade(delay: 200.ms).slideY(begin: 0.1)),
                             const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${kpis['quotations_growth'] ?? 0}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')).animate().fade(delay: 300.ms).slideY(begin: 0.1)),
+                            Expanded(child: GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${(kpis['quotations_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')).animate().fade(delay: 300.ms).slideY(begin: 0.1)),
                             const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${kpis['customers_growth'] ?? 0}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')).animate().fade(delay: 400.ms).slideY(begin: 0.1)),
+                            Expanded(child: GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${(kpis['customers_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')).animate().fade(delay: 400.ms).slideY(begin: 0.1)),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -123,13 +123,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   } else {
                     return Column(
                       children: [
-                        GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${kpis['revenue_growth'] ?? 0}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')),
+                        GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')),
                         const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${kpis['active_orders_growth'] ?? 0}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')),
+                        GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['active_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')),
                         const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${kpis['quotations_growth'] ?? 0}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')),
+                        GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${(kpis['quotations_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')),
                         const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${kpis['customers_growth'] ?? 0}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')),
+                        GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${(kpis['customers_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')),
                         const SizedBox(height: 16),
                         GradientKpiCard(title: 'Production Orders', value: '${kpis['production_orders'] ?? 0}', subtitle: 'Active', icon: LucideIcons.factory, gradientColors: [Colors.indigo, Colors.indigo], onTap: () => context.go('/manufacturing?status=active')),
                         const SizedBox(height: 16),

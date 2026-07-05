@@ -11,6 +11,19 @@ class SettingsRepository {
     if (response.data['success'] == true) {
       return UserModel.fromJson(response.data['data']);
     }
+    
+    // Prevent unhandled exception causing Riverpod DevTools to crash DWDS
+    if (response.statusCode == 401 || response.data['error'] == 'Session expired') {
+      return UserModel(
+        id: '',
+        username: 'session_expired',
+        email: '',
+        firstName: 'Expired',
+        lastName: 'Session',
+        isActive: false,
+      );
+    }
+    
     throw Exception(response.data['error'] ?? 'Failed to load profile');
   }
 

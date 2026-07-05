@@ -164,22 +164,32 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
               child: Card(
                 child: ListView(
                   children: [
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        headingTextStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                        dataTextStyle: theme.textTheme.bodyMedium,
-                        dividerThickness: 1,
-                        columns: const [
-                          DataColumn(label: Text('Item Name & SKU')),
-                          DataColumn(label: Text('Type')),
-                          DataColumn(label: Text('Location')),
-                          DataColumn(label: Text('Stock Level')),
-                          DataColumn(label: Text('Total Value')),
-                          DataColumn(label: Text('')),
-                        ],
-                        rows: filteredItems.map((item) => _buildDataRow(item, theme)).toList(),
-                      ),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.topCenter,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+                            child: DataTable(
+                              columnSpacing: 24,
+                              horizontalMargin: 16,
+                              headingTextStyle: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                              dataTextStyle: theme.textTheme.bodyMedium,
+                              dividerThickness: 1,
+                              columns: const [
+                                DataColumn(label: Text('Item Name & SKU')),
+                                DataColumn(label: Text('Type')),
+                                DataColumn(label: Text('Location')),
+                                DataColumn(label: Text('Stock Level')),
+                                DataColumn(label: Text('Total Value')),
+                                DataColumn(label: Text('')),
+                              ],
+                              rows: filteredItems.map((item) => _buildDataRow(item, theme)).toList(),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

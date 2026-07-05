@@ -59,11 +59,7 @@ func (s *AuthService) Authenticate(req dtos.LoginRequest) (*dtos.AuthResponse, e
 			perms = append(perms, p.PermissionCode)
 		}
 	}
-	// For POC: Ensure admin gets PLATFORM_ADMIN role
-	if req.Username == "admin" {
-		perms = append(perms, "PLATFORM_ADMIN")
-	}
-
+	// RBAC based solely on DB permissions
 	return &dtos.AuthResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

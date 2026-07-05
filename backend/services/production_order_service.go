@@ -65,8 +65,8 @@ func (s *ProductionOrderService) CreateProductionOrder(req *models.CreateProduct
 	return s.repo.GetByID(order.ID.String(), tenantID)
 }
 
-func (s *ProductionOrderService) GetProductionOrders(tenantID string) ([]models.ProductionOrder, error) {
-	return s.repo.GetAll(tenantID)
+func (s *ProductionOrderService) GetProductionOrders(tenantID string, status string) ([]models.ProductionOrder, error) {
+	return s.repo.GetAll(tenantID, status)
 }
 
 func (s *ProductionOrderService) GetProductionOrderByID(id string, tenantID string) (*models.ProductionOrder, error) {
