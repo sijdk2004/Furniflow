@@ -96,11 +96,11 @@ class SalesTab extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Expanded(child: ReportKpiCard(title: 'Total Revenue', value: '\$1,245,000', trend: '+12%', isPositive: true)),
+              Expanded(child: ReportKpiCard(title: 'Total Revenue', value: '₹1,245,000', trend: '+12%', isPositive: true)),
               SizedBox(width: 24),
               Expanded(child: ReportKpiCard(title: 'Orders Won', value: '342', trend: '+5%', isPositive: true)),
               SizedBox(width: 24),
-              Expanded(child: ReportKpiCard(title: 'Average Order Value', value: '\$3,640', trend: '-2%', isPositive: false)),
+              Expanded(child: ReportKpiCard(title: 'Average Order Value', value: '₹3,640', trend: '-2%', isPositive: false)),
               SizedBox(width: 24),
               Expanded(child: ReportKpiCard(title: 'Win Rate', value: '68%', trend: '+4%', isPositive: true)),
             ],

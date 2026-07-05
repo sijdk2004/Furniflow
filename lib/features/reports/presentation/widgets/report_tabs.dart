@@ -49,7 +49,7 @@ class CustomersTab extends StatelessWidget {
               SizedBox(width: 24),
               Expanded(child: ReportKpiCard(title: 'Churn Rate', value: '2.1%', trend: '-0.4%', isPositive: true)),
               SizedBox(width: 24),
-              Expanded(child: ReportKpiCard(title: 'Customer LTV', value: '\$14,500', trend: '+8%', isPositive: true)),
+              Expanded(child: ReportKpiCard(title: 'Customer LTV', value: '₹14,500', trend: '+8%', isPositive: true)),
             ],
           ),
           const SizedBox(height: 24),
@@ -115,7 +115,7 @@ class InventoryTab extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Expanded(child: ReportKpiCard(title: 'Inventory Value', value: '\$850,000', trend: '-2.1%', isPositive: false)),
+              Expanded(child: ReportKpiCard(title: 'Inventory Value', value: '₹8,50,000', trend: '-2.1%', isPositive: false)),
               SizedBox(width: 24),
               Expanded(child: ReportKpiCard(title: 'Stockouts', value: '3', trend: '-1', isPositive: true)),
               SizedBox(width: 24),
@@ -261,11 +261,11 @@ class FinanceTab extends StatelessWidget {
             children: [
               Expanded(child: ReportKpiCard(title: 'Gross Margin', value: '42.5%', trend: '+2.1%', isPositive: true)),
               SizedBox(width: 24),
-              Expanded(child: ReportKpiCard(title: 'Operating Costs', value: '\$142,800', trend: '-1.5%', isPositive: true)),
+              Expanded(child: ReportKpiCard(title: 'Operating Costs', value: '₹1,42,800', trend: '-1.5%', isPositive: true)),
               SizedBox(width: 24),
-              Expanded(child: ReportKpiCard(title: 'Accounts Receivable', value: '\$320K', trend: '-5%', isPositive: true)),
+              Expanded(child: ReportKpiCard(title: 'Accounts Receivable', value: '₹320K', trend: '-5%', isPositive: true)),
               SizedBox(width: 24),
-              Expanded(child: ReportKpiCard(title: 'Net Profit', value: '\$185,000', trend: '+14%', isPositive: true)),
+              Expanded(child: ReportKpiCard(title: 'Net Profit', value: '₹1,85,000', trend: '+14%', isPositive: true)),
             ],
           ),
           const SizedBox(height: 24),

@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/bom_provider.dart';
 
 class BomListScreen extends ConsumerStatefulWidget {
@@ -15,8 +16,6 @@ class BomListScreen extends ConsumerStatefulWidget {
 
 class _BomListScreenState extends ConsumerState<BomListScreen> {
   String _searchQuery = '';
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
-  final _dateFormat = DateFormat('MMM dd, yyyy');
 
   @override
   void initState() {
@@ -179,8 +178,8 @@ class _BomListScreenState extends ConsumerState<BomListScreen> {
                                       ],
                                     ),
                                   ),
-                                  DataCell(Text(_dateFormat.format(b.createdOn.toLocal()))),
-                                  DataCell(Text(_currencyFormat.format(b.totalCost))),
+                                  DataCell(Text(FormatHelper.formatDate(b.createdOn))),
+                                  DataCell(Text(FormatHelper.formatCurrency(b.totalCost))),
                                   DataCell(_buildStatusBadge(b.status)),
                                   DataCell(
                                     Row(

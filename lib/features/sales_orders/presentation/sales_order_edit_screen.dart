@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/sales_order_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
 
@@ -130,7 +132,7 @@ class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
                                 ),
                                 child: Text(
                                   _expectedDeliveryDate != null
-                                      ? DateFormat('MMM dd, yyyy').format(_expectedDeliveryDate!)
+                                      ? FormatHelper.formatDate(_expectedDeliveryDate!)
                                       : 'Select Date',
                                 ),
                               ),

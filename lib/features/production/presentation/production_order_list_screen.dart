@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/production_order_provider.dart';
 
 class ProductionOrderListScreen extends ConsumerStatefulWidget {
@@ -15,8 +16,6 @@ class ProductionOrderListScreen extends ConsumerStatefulWidget {
 
 class _ProductionOrderListScreenState extends ConsumerState<ProductionOrderListScreen> {
   String _searchQuery = '';
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
-  final _dateFormat = DateFormat('MMM dd, yyyy');
 
   @override
   void initState() {
@@ -186,8 +185,8 @@ class _ProductionOrderListScreenState extends ConsumerState<ProductionOrderListS
                                     ),
                                   ),
                                   DataCell(Text(o.quantity.toString())),
-                                  DataCell(Text(_dateFormat.format(o.createdOn.toLocal()))),
-                                  DataCell(Text(_currencyFormat.format(o.totalCost))),
+                                  DataCell(Text(FormatHelper.formatDate(o.createdOn))),
+                                  DataCell(Text(FormatHelper.formatCurrency(o.totalCost))),
                                   DataCell(_buildStatusBadge(o.status)),
                                   DataCell(
                                     Row(

@@ -180,7 +180,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
             ),
           ),
         ),
-        DataCell(Text('\$${customer.creditLimit.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600))),
+        DataCell(Text('₹${customer.creditLimit.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600))),
         DataCell(
           PopupMenuButton<String>(
             icon: const Icon(LucideIcons.moreHorizontal, size: 20),

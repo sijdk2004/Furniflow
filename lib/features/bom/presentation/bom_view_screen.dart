@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/bom_provider.dart';
 
 class BomViewScreen extends ConsumerStatefulWidget {
@@ -13,10 +14,7 @@ class BomViewScreen extends ConsumerStatefulWidget {
   @override
   ConsumerState<BomViewScreen> createState() => _BomViewScreenState();
 }
-
 class _BomViewScreenState extends ConsumerState<BomViewScreen> {
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
-  final _dateFormat = DateFormat('MMM dd, yyyy');
 
   Future<void> _updateStatus(String newStatus) async {
     try {
@@ -199,8 +197,8 @@ class _BomViewScreenState extends ConsumerState<BomViewScreen> {
                                     cells: [
                                       DataCell(Text(item.component?['product_name'] ?? 'Unknown Component')),
                                       DataCell(Text('${item.quantity} ${item.uom?['code'] ?? ''}')),
-                                      DataCell(Text(_currencyFormat.format(item.unitCost))),
-                                      DataCell(Text(_currencyFormat.format(item.totalCost))),
+                                      DataCell(Text(FormatHelper.formatCurrency(item.unitCost))),
+                                      DataCell(Text(FormatHelper.formatCurrency(item.totalCost))),
                                     ],
                                   );
                                 }).toList(),
@@ -228,7 +226,7 @@ class _BomViewScreenState extends ConsumerState<BomViewScreen> {
         children: [
           Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 16 : 14)),
           Text(
-            _currencyFormat.format(value),
+            FormatHelper.formatCurrency(value),
             style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 16 : 14),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/utils/format_helper.dart';
 
 class DeliveryTimeline extends StatelessWidget {
   final List<dynamic> histories;
@@ -89,7 +90,7 @@ class DeliveryTimeline extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            DateFormat('MMM dd, yyyy - hh:mm a').format(date),
+                            FormatHelper.formatDateTime(date),
                             style: const TextStyle(
                               color: AppColors.textSecondaryDark,
                               fontSize: 12,

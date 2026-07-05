@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/inventory_providers.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 import '../domain/inventory_model.dart';
 import '../../../core/utils/shared_dialogs.dart';
 
@@ -145,7 +147,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 Expanded(
                   child: _buildSummaryCard(
                     'Inventory Value', 
-                    '\$${NumberFormat('#,##0').format(allItems.fold(0.0, (sum, item) => sum + item.totalValue))}', 
+                    FormatHelper.formatCurrency(allItems.fold(0.0, (sum, item) => sum + item.totalValue)), 
                     LucideIcons.dollarSign, 
                     Colors.teal, 
                     theme
@@ -274,7 +276,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
             ],
           ),
         ),
-        DataCell(Text('\$${NumberFormat('#,##0.00').format(item.totalValue)}', style: const TextStyle(fontWeight: FontWeight.w600))),
+        DataCell(Text(FormatHelper.formatCurrency(item.totalValue), style: const TextStyle(fontWeight: FontWeight.w600))),
         DataCell(
           IconButton(
             icon: const Icon(LucideIcons.moreHorizontal, size: 20),
@@ -295,15 +297,17 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Movement Type'),
-                items: ['Receive Goods', 'Issue to Production', 'Transfer Location', 'Adjustment'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              SearchableDropdown<String>(
+                label: 'Movement Type',
+                items: const ['Receive Goods', 'Issue to Production', 'Transfer Location', 'Adjustment'],
+                itemAsString: (e) => e,
                 onChanged: (v) {},
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Item'),
-                items: ['Oak Wood Panels', 'Metal Desk Legs', 'Screws (M4)'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              SearchableDropdown<String>(
+                label: 'Item',
+                items: const ['Oak Wood Panels', 'Metal Desk Legs', 'Screws (M4)'],
+                itemAsString: (e) => e,
                 onChanged: (v) {},
               ),
               const SizedBox(height: 16),
@@ -312,9 +316,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'Quantity'))),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Target Location'),
-                      items: ['Warehouse A', 'Warehouse B', 'Production Floor'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    child: SearchableDropdown<String>(
+                      label: 'Target Location',
+                      items: const ['Warehouse A', 'Warehouse B', 'Production Floor'],
+                      itemAsString: (e) => e,
                       onChanged: (v) {},
                     ),
                   ),
@@ -348,9 +353,10 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'SKU'))),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Category'),
-                      items: ['Raw Material', 'Hardware', 'Finish', 'Packaging'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    child: SearchableDropdown<String>(
+                      label: 'Category',
+                      items: const ['Raw Material', 'Hardware', 'Finish', 'Packaging'],
+                      itemAsString: (e) => e,
                       onChanged: (v) {},
                     ),
                   ),

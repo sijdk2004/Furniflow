@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/quotation_api_provider.dart';
 
 class QuotationViewScreen extends ConsumerWidget {
@@ -54,7 +55,7 @@ class QuotationViewScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('Customer: $cusName', style: theme.textTheme.titleLarge),
-                        Text('Valid Until: ${DateFormat('yyyy-MM-dd').format(q.validUntil)}', style: theme.textTheme.bodyLarge),
+                        Text('Valid Until: ${FormatHelper.formatDate(q.validUntil)}', style: theme.textTheme.bodyLarge),
                         const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -120,8 +121,8 @@ class QuotationViewScreen extends ConsumerWidget {
                               children: [
                                 Padding(padding: const EdgeInsets.all(8), child: Text(i.productId)),
                                 Padding(padding: const EdgeInsets.all(8), child: Text(i.quantity.toString())),
-                                Padding(padding: const EdgeInsets.all(8), child: Text('\$${NumberFormat('#,##0.00').format(i.unitPrice)}')),
-                                Padding(padding: const EdgeInsets.all(8), child: Text('\$${NumberFormat('#,##0.00').format((i.totalPrice ?? 0.0))}')),
+                                Padding(padding: const EdgeInsets.all(8), child: Text(FormatHelper.formatCurrency(i.unitPrice))),
+                                Padding(padding: const EdgeInsets.all(8), child: Text(FormatHelper.formatCurrency((i.totalPrice ?? 0.0)))),
                               ]
                             ))
                           ],
@@ -133,11 +134,11 @@ class QuotationViewScreen extends ConsumerWidget {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
-                                Text('Subtotal: \$${NumberFormat('#,##0.00').format(q.subtotal)}'),
-                                Text('Discount: \$${NumberFormat('#,##0.00').format(q.discount)}'),
-                                Text('Tax: \$${NumberFormat('#,##0.00').format(q.tax)}'),
+                                Text('Subtotal: ${FormatHelper.formatCurrency(q.subtotal)}'),
+                                Text('Discount: ${FormatHelper.formatCurrency(q.discount)}'),
+                                Text('Tax: ${FormatHelper.formatCurrency(q.tax)}'),
                                 const SizedBox(height: 8),
-                                Text('Total: \$${NumberFormat('#,##0.00').format(q.total)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                Text('Total: ${FormatHelper.formatCurrency(q.total)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                               ],
                             )
                           ],

@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../data/invoice_providers.dart';
 import '../domain/invoice_model.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class InvoicesScreen extends ConsumerStatefulWidget {
   const InvoicesScreen({super.key});
@@ -150,7 +151,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                 children: [
                   _buildInfoColumn('Issue Date', DateFormat('MMM dd, yyyy').format(invoice.issueDate), theme),
                   _buildInfoColumn('Due Date', DateFormat('MMM dd, yyyy').format(invoice.dueDate), theme, isRed: invoice.status == 'Overdue'),
-                  _buildInfoColumn('Total Amount', '\$${invoice.total.toStringAsFixed(2)}', theme, isBold: true),
+                  _buildInfoColumn('Total Amount', '₹${invoice.total.toStringAsFixed(2)}', theme, isBold: true),
                 ],
               ),
             ],
@@ -207,15 +208,17 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Select Customer'),
-                items: ['Sarah Jenkins', 'Michael Chang', 'Emma Watson'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              SearchableDropdown<String>(
+                label: 'Select Customer',
+                items: const ['Sarah Jenkins', 'Michael Chang', 'Emma Watson'],
+                itemAsString: (e) => e,
                 onChanged: (v) {},
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Select Sales Order'),
-                items: ['SO-24-1029', 'SO-24-1030', 'SO-24-1031'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              SearchableDropdown<String>(
+                label: 'Select Sales Order',
+                items: const ['SO-24-1029', 'SO-24-1030', 'SO-24-1031'],
+                itemAsString: (e) => e,
                 onChanged: (v) {},
               ),
               const SizedBox(height: 16),
@@ -269,7 +272,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       const Text('Amount Due', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                      Text('\$${invoice.total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
+                      Text('₹${invoice.total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24)),
                     ],
                   ),
                 ],
@@ -305,8 +308,8 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                         children: [
                           Expanded(flex: 3, child: Text(item.description)),
                           Expanded(flex: 1, child: Text('${item.quantity}', textAlign: TextAlign.center)),
-                          Expanded(flex: 1, child: Text('\$${item.unitPrice.toStringAsFixed(2)}', textAlign: TextAlign.right)),
-                          Expanded(flex: 1, child: Text('\$${item.total.toStringAsFixed(2)}', textAlign: TextAlign.right)),
+                          Expanded(flex: 1, child: Text('₹${item.unitPrice.toStringAsFixed(2)}', textAlign: TextAlign.right)),
+                          Expanded(flex: 1, child: Text('₹${item.total.toStringAsFixed(2)}', textAlign: TextAlign.right)),
                         ],
                       ),
                     )),
@@ -319,9 +322,9 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text('Subtotal: \$${invoice.subtotal.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey)),
+                    Text('Subtotal: ₹${invoice.subtotal.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey)),
                     const SizedBox(height: 4),
-                    Text('Tax (10%): \$${invoice.tax.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey)),
+                    Text('Tax (10%): ₹${invoice.tax.toStringAsFixed(2)}', style: const TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),

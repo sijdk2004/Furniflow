@@ -66,7 +66,7 @@ class _ProductViewScreenState extends ConsumerState<ProductViewScreen> {
                       _buildRow('Category:', _product!.category?.name ?? '-'),
                       _buildRow('Wood Type:', _product!.woodType?.name ?? '-'),
                       _buildRow('UOM:', _product!.uom?.name ?? '-'),
-                      _buildRow('Base Price:', '\$${_product!.basePrice.toStringAsFixed(2)}'),
+                      _buildRow('Base Price:', '₹${_product!.basePrice.toStringAsFixed(2)}'),
                       _buildRow('Description:', _product!.description ?? '-'),
                       _buildRow('Status:', _product!.isActive ? 'Active' : 'Inactive'),
                       const SizedBox(height: 24),

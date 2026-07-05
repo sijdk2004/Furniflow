@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../../../core/theme/colors.dart';
 import '../data/delivery_provider.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 import '../../production/data/production_order_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
 
@@ -115,24 +116,16 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                         loading: () => const CircularProgressIndicator(),
                         error: (err, stack) => Text('Error loading orders: $err', style: const TextStyle(color: Colors.red)),
                         data: (orders) {
-                          return DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              labelText: 'Production Order *',
-                              labelStyle: TextStyle(color: AppColors.textSecondaryDark),
-                              border: OutlineInputBorder(),
-                              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
-                            ),
-                            dropdownColor: AppColors.surfaceDark,
-                            style: const TextStyle(color: AppColors.textPrimaryDark),
-                            value: _selectedProductionOrderId,
-                            items: orders.map((order) {
+                          return SearchableDropdown<ProductionOrder>(
+                            label: 'Production Order',
+                            isRequired: true,
+                            items: orders,
+                            itemAsString: (order) {
                               final displayId = order.id.toString().length > 8 ? order.id.toString().substring(0, 8) : order.id.toString();
-                              return DropdownMenuItem(
-                                value: order.id,
-                                child: Text('PO-$displayId - ${order.status}'),
-                              );
-                            }).toList(),
-                            onChanged: (val) => setState(() => _selectedProductionOrderId = val),
+                              return 'PO-$displayId - ${order.status}';
+                            },
+                            selectedItem: orders.where((o) => o.id == _selectedProductionOrderId).firstOrNull,
+                            onChanged: (val) => setState(() => _selectedProductionOrderId = val?.id),
                             validator: (val) => val == null ? 'Please select an order' : null,
                           );
                         },
@@ -160,7 +153,7 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                             enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
                           ),
                           child: Text(
-                            DateFormat('MMM dd, yyyy').format(_expectedDeliveryDate),
+                            FormatHelper.formatDate(_expectedDeliveryDate),
                             style: const TextStyle(color: AppColors.textPrimaryDark),
                           ),
                         ),

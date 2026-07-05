@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../data/customer_provider.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 import '../../master_data/domain/master_data_model.dart';
 import '../../master_data/data/master_data_repository.dart';
 import '../../../core/utils/shared_dialogs.dart';
@@ -166,11 +167,12 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Customer Type', border: OutlineInputBorder()),
-                      value: _selectedType,
-                      items: typesFuture.value?.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList() ?? [],
-                      onChanged: (val) => setState(() => _selectedType = val),
+                    SearchableDropdown<MasterDataModel>(
+                      label: 'Customer Type',
+                      items: typesFuture.value ?? [],
+                      itemAsString: (e) => e.name,
+                      selectedItem: (typesFuture.value ?? []).where((e) => e.id == _selectedType).firstOrNull,
+                      onChanged: (val) => setState(() => _selectedType = val?.id),
                     ),
                     const SizedBox(height: 16),
                     TextFormField(controller: _address1Ctrl, decoration: const InputDecoration(labelText: 'Address Line 1', border: OutlineInputBorder())),
@@ -180,21 +182,24 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Country', border: OutlineInputBorder()),
-                            value: _selectedCountry,
-                            items: countriesFuture.value?.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList() ?? [],
-                            onChanged: null, // Read-only
+                          child: SearchableDropdown<MasterDataModel>(
+                            label: 'Country',
+                            isEnabled: false,
+                            items: countriesFuture.value ?? [],
+                            itemAsString: (e) => e.name,
+                            selectedItem: (countriesFuture.value ?? []).where((e) => e.id == _selectedCountry).firstOrNull,
+                            onChanged: (_) {},
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'State', border: OutlineInputBorder()),
-                            value: _selectedState,
-                            items: filteredStates.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                          child: SearchableDropdown<MasterDataModel>(
+                            label: 'State',
+                            items: filteredStates,
+                            itemAsString: (e) => e.name,
+                            selectedItem: filteredStates.where((e) => e.id == _selectedState).firstOrNull,
                             onChanged: (val) => setState(() {
-                              _selectedState = val;
+                              _selectedState = val?.id;
                               _selectedCity = null;
                               _isCustomCity = false;
                             }),
@@ -206,13 +211,14 @@ class _CustomerFormScreenState extends ConsumerState<CustomerFormScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'City', border: OutlineInputBorder()),
-                            value: _selectedCity,
-                            items: filteredCities.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
+                          child: SearchableDropdown<MasterDataModel>(
+                            label: 'City',
+                            items: filteredCities,
+                            itemAsString: (e) => e.name,
+                            selectedItem: filteredCities.where((e) => e.id == _selectedCity).firstOrNull,
                             onChanged: (val) => setState(() {
-                              _selectedCity = val;
-                              _isCustomCity = val == 'others';
+                              _selectedCity = val?.id;
+                              _isCustomCity = val?.id == 'others';
                             }),
                           ),
                         ),

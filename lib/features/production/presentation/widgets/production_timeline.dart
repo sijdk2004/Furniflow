@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/utils/format_helper.dart';
 import '../../data/production_tracking_provider.dart';
 
 class ProductionTimelineWidget extends StatelessWidget {
@@ -75,11 +76,11 @@ class ProductionTimelineWidget extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('Entered: ${DateFormat('MMM dd, yyyy HH:mm').format(history.stageEnteredAt)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                        Text('Entered: ${FormatHelper.formatDateTime24(history.stageEnteredAt)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                         if (history.stageStartedAt != null)
-                          Text('Started: ${DateFormat('MMM dd, yyyy HH:mm').format(history.stageStartedAt!)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text('Started: ${FormatHelper.formatDateTime24(history.stageStartedAt!)}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                         if (history.stageCompletedAt != null)
-                          Text('Completed: ${DateFormat('MMM dd, yyyy HH:mm').format(history.stageCompletedAt!)}', style: const TextStyle(color: Colors.green, fontSize: 12)),
+                          Text('Completed: ${FormatHelper.formatDateTime24(history.stageCompletedAt!)}', style: const TextStyle(color: Colors.green, fontSize: 12)),
                         if (history.remarks != null) ...[
                           const SizedBox(height: 8),
                           Text('Remarks: ${history.remarks}', style: const TextStyle(color: Colors.white70, fontStyle: FontStyle.italic)),

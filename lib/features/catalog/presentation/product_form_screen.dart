@@ -5,8 +5,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../master_data/presentation/master_data_provider.dart';
 import '../data/product_api_provider.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 import '../../master_data/data/master_data_repository.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../master_data/domain/master_data_model.dart';
 
 class ProductFormScreen extends ConsumerStatefulWidget {
   final String? id;
@@ -162,30 +164,33 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                       ],
                     ),
                     const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
-                      value: _selectedCategory,
-                      items: categories.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                      onChanged: (val) => setState(() => _selectedCategory = val),
+                    SearchableDropdown<MasterDataModel>(
+                      label: 'Category',
+                      items: categories,
+                      itemAsString: (e) => e.name,
+                      selectedItem: categories.where((e) => e.id == _selectedCategory).firstOrNull,
+                      onChanged: (val) => setState(() => _selectedCategory = val?.id),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Wood Type', border: OutlineInputBorder()),
-                            value: _selectedWoodType,
-                            items: woodTypes.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                            onChanged: (val) => setState(() => _selectedWoodType = val),
+                          child: SearchableDropdown<MasterDataModel>(
+                            label: 'Wood Type',
+                            items: woodTypes,
+                            itemAsString: (e) => e.name,
+                            selectedItem: woodTypes.where((e) => e.id == _selectedWoodType).firstOrNull,
+                            onChanged: (val) => setState(() => _selectedWoodType = val?.id),
                           ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'UOM', border: OutlineInputBorder()),
-                            value: _selectedUOM,
-                            items: uoms.map((e) => DropdownMenuItem(value: e.id, child: Text(e.name))).toList(),
-                            onChanged: (val) => setState(() => _selectedUOM = val),
+                          child: SearchableDropdown<MasterDataModel>(
+                            label: 'UOM',
+                            items: uoms,
+                            itemAsString: (e) => e.name,
+                            selectedItem: uoms.where((e) => e.id == _selectedUOM).firstOrNull,
+                            onChanged: (val) => setState(() => _selectedUOM = val?.id),
                           ),
                         ),
                       ],

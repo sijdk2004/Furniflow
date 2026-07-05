@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/quotation_api_provider.dart';
 import '../domain/quotation_model_api.dart';
 import '../../../core/utils/shared_dialogs.dart';
@@ -204,7 +205,7 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
                                           Expanded(
                                             flex: 2,
                                             child: Text(
-                                              DateFormat('MMM dd, yyyy').format(q.dateCreated),
+                                              FormatHelper.formatDate(q.dateCreated),
                                               style: theme.textTheme.bodyMedium,
                                               overflow: TextOverflow.ellipsis,
                                             ),
@@ -212,7 +213,7 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
                                           Expanded(
                                             flex: 2,
                                             child: Text(
-                                              DateFormat('MMM dd, yyyy').format(q.validUntil),
+                                              FormatHelper.formatDate(q.validUntil),
                                               style: TextStyle(
                                                 color: isExpired ? Colors.red : null,
                                                 fontSize: 13,
@@ -223,7 +224,7 @@ class _QuotationsScreenState extends ConsumerState<QuotationsScreen> {
                                           Expanded(
                                             flex: 2,
                                             child: Text(
-                                              '\$${NumberFormat('#,##0.00').format(q.total)}',
+                                              FormatHelper.formatCurrency(q.total),
                                               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                                               overflow: TextOverflow.ellipsis,
                                             ),

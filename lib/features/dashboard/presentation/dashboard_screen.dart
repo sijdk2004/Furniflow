@@ -92,55 +92,55 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                   final totalRevFormatted = ((kpis['total_revenue'] ?? 0) / 1000).toStringAsFixed(2);
                   final monthlyRevFormatted = ((kpis['monthly_revenue'] ?? 0) / 1000).toStringAsFixed(2);
 
-                  if (isDesktop) {
-                    return Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(child: GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')).animate().fade(delay: 100.ms).slideY(begin: 0.1)),
-                            const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['active_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')).animate().fade(delay: 200.ms).slideY(begin: 0.1)),
-                            const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${(kpis['quotations_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')).animate().fade(delay: 300.ms).slideY(begin: 0.1)),
-                            const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${(kpis['customers_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')).animate().fade(delay: 400.ms).slideY(begin: 0.1)),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(child: GradientKpiCard(title: 'Production Orders', value: '${kpis['production_orders'] ?? 0}', subtitle: 'Active', icon: LucideIcons.factory, gradientColors: [Colors.indigo, Colors.indigo], onTap: () => context.go('/manufacturing?status=active')).animate().fade(delay: 500.ms).slideY(begin: 0.1)),
-                            const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Ready for Delivery', value: '${kpis['ready_for_delivery'] ?? 0}', subtitle: 'Pending', icon: LucideIcons.box, gradientColors: [Colors.green, Colors.green], onTap: () => context.go('/delivery?status=ready')).animate().fade(delay: 600.ms).slideY(begin: 0.1)),
-                            const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Delivered Orders', value: '${kpis['delivered_orders'] ?? 0}', subtitle: 'Completed', icon: LucideIcons.truck, gradientColors: [Colors.lightBlue, Colors.lightBlue], onTap: () => context.go('/delivery?status=delivered')).animate().fade(delay: 700.ms).slideY(begin: 0.1)),
-                            const SizedBox(width: 16),
-                            Expanded(child: GradientKpiCard(title: 'Monthly Revenue', value: '\$$monthlyRevFormatted\k', subtitle: 'This Month', icon: LucideIcons.dollarSign, gradientColors: [Colors.pink, Colors.pink], onTap: () => context.go('/sales-orders')).animate().fade(delay: 800.ms).slideY(begin: 0.1)),
-                          ],
-                        ),
-                      ],
-                    );
-                  } else {
-                    return Column(
-                      children: [
-                        GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['active_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${(kpis['quotations_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${(kpis['customers_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Production Orders', value: '${kpis['production_orders'] ?? 0}', subtitle: 'Active', icon: LucideIcons.factory, gradientColors: [Colors.indigo, Colors.indigo], onTap: () => context.go('/manufacturing?status=active')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Ready for Delivery', value: '${kpis['ready_for_delivery'] ?? 0}', subtitle: 'Pending', icon: LucideIcons.box, gradientColors: [Colors.green, Colors.green], onTap: () => context.go('/delivery?status=ready')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Delivered Orders', value: '${kpis['delivered_orders'] ?? 0}', subtitle: 'Completed', icon: LucideIcons.truck, gradientColors: [Colors.lightBlue, Colors.lightBlue], onTap: () => context.go('/delivery?status=delivered')),
-                        const SizedBox(height: 16),
-                        GradientKpiCard(title: 'Monthly Revenue', value: '\$$monthlyRevFormatted\k', subtitle: 'This Month', icon: LucideIcons.dollarSign, gradientColors: [Colors.pink, Colors.pink], onTap: () => context.go('/sales-orders')),
-                      ],
-                    );
-                  }
+                    if (isDesktop) {
+                      return Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(child: GradientKpiCard(title: 'Total Revenue', value: '₹${totalRevFormatted}k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')).animate().fade(delay: 100.ms).slideY(begin: 0.1)),
+                              const SizedBox(width: 16),
+                              Expanded(child: GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['active_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')).animate().fade(delay: 200.ms).slideY(begin: 0.1)),
+                              const SizedBox(width: 16),
+                              Expanded(child: GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${(kpis['quotations_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')).animate().fade(delay: 300.ms).slideY(begin: 0.1)),
+                              const SizedBox(width: 16),
+                              Expanded(child: GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${(kpis['customers_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')).animate().fade(delay: 400.ms).slideY(begin: 0.1)),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(child: GradientKpiCard(title: 'Production Orders', value: '${kpis['production_orders'] ?? 0}', subtitle: 'Active', icon: LucideIcons.factory, gradientColors: [Colors.indigo, Colors.indigo], onTap: () => context.go('/manufacturing?status=active')).animate().fade(delay: 500.ms).slideY(begin: 0.1)),
+                              const SizedBox(width: 16),
+                              Expanded(child: GradientKpiCard(title: 'Ready for Delivery', value: '${kpis['ready_for_delivery'] ?? 0}', subtitle: 'Pending', icon: LucideIcons.box, gradientColors: [Colors.green, Colors.green], onTap: () => context.go('/delivery?status=ready')).animate().fade(delay: 600.ms).slideY(begin: 0.1)),
+                              const SizedBox(width: 16),
+                              Expanded(child: GradientKpiCard(title: 'Delivered Orders', value: '${kpis['delivered_orders'] ?? 0}', subtitle: 'Completed', icon: LucideIcons.truck, gradientColors: [Colors.lightBlue, Colors.lightBlue], onTap: () => context.go('/delivery?status=delivered')).animate().fade(delay: 700.ms).slideY(begin: 0.1)),
+                              const SizedBox(width: 16),
+                              Expanded(child: GradientKpiCard(title: 'Monthly Revenue', value: '₹${monthlyRevFormatted}k', subtitle: 'This Month', icon: LucideIcons.indianRupee, gradientColors: [Colors.pink, Colors.pink], onTap: () => context.go('/sales-orders')).animate().fade(delay: 800.ms).slideY(begin: 0.1)),
+                            ],
+                          ),
+                        ],
+                      );
+                    } else {
+                      return Column(
+                        children: [
+                          GradientKpiCard(title: 'Total Revenue', value: '₹${totalRevFormatted}k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['active_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Quotations', value: '${kpis['active_quotations'] ?? 0}', subtitle: '+${(kpis['quotations_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.fileText, gradientColors: [Colors.purple, Colors.purple], onTap: () => context.go('/quotations?status=active')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Customers', value: '${kpis['total_customers'] ?? 0}', subtitle: '+${(kpis['customers_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.users, gradientColors: [Colors.orange, Colors.orange], onTap: () => context.go('/customers?filter=all')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Production Orders', value: '${kpis['production_orders'] ?? 0}', subtitle: 'Active', icon: LucideIcons.factory, gradientColors: [Colors.indigo, Colors.indigo], onTap: () => context.go('/manufacturing?status=active')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Ready for Delivery', value: '${kpis['ready_for_delivery'] ?? 0}', subtitle: 'Pending', icon: LucideIcons.box, gradientColors: [Colors.green, Colors.green], onTap: () => context.go('/delivery?status=ready')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Delivered Orders', value: '${kpis['delivered_orders'] ?? 0}', subtitle: 'Completed', icon: LucideIcons.truck, gradientColors: [Colors.lightBlue, Colors.lightBlue], onTap: () => context.go('/delivery?status=delivered')),
+                          const SizedBox(height: 16),
+                          GradientKpiCard(title: 'Monthly Revenue', value: '₹${monthlyRevFormatted}k', subtitle: 'This Month', icon: LucideIcons.indianRupee, gradientColors: [Colors.pink, Colors.pink], onTap: () => context.go('/sales-orders')),
+                        ],
+                      );
+                    }
               }
             ),
 
@@ -335,11 +335,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           const SizedBox(height: 32),
           Column(
             children: [
-              _buildLegendItem(context, 0, 'Office Furniture', Colors.teal, '\$111,825'),
+              _buildLegendItem(context, 0, 'Office Furniture', Colors.teal, '₹1,11,825'),
               const SizedBox(height: 12),
-              _buildLegendItem(context, 1, 'Home Living', Colors.blue, '\$86,975'),
+              _buildLegendItem(context, 1, 'Home Living', Colors.blue, '₹86,975'),
               const SizedBox(height: 12),
-              _buildLegendItem(context, 2, 'Custom Projects', Colors.orange, '\$49,700'),
+              _buildLegendItem(context, 2, 'Custom Projects', Colors.orange, '₹49,700'),
             ],
           ),
         ],
@@ -480,7 +480,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem('\$${rod.toY}k\n${labels[group.x]}', const TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
+                      return BarTooltipItem('₹${rod.toY}k\n${labels[group.x]}', const TextStyle(color: Colors.white, fontWeight: FontWeight.bold));
                     },
                   ),
                 ),
@@ -499,7 +499,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 40,
-                      getTitlesWidget: (value, meta) => Text('\$${value.toInt()}k', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      getTitlesWidget: (value, meta) => Text('₹${value.toInt()}k', style: const TextStyle(fontSize: 11, color: Colors.grey)),
                     ),
                   ),
                   topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -572,7 +572,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('\$${order['amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                        Text('₹${order['amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
                         Text(order['status'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/sales_order_provider.dart';
 
 class SalesOrderViewScreen extends ConsumerStatefulWidget {
@@ -15,8 +16,6 @@ class SalesOrderViewScreen extends ConsumerStatefulWidget {
 }
 
 class _SalesOrderViewScreenState extends ConsumerState<SalesOrderViewScreen> {
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
-  final _dateFormat = DateFormat('MMM dd, yyyy');
 
   final List<String> _statusWorkflow = [
     'Draft',
@@ -210,10 +209,10 @@ class _SalesOrderViewScreenState extends ConsumerState<SalesOrderViewScreen> {
                               
                               Text('Order Details', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 16),
-                              _buildInfoRow('Order Date:', _dateFormat.format(order.orderDate.toLocal())),
+                              _buildInfoRow('Order Date:', FormatHelper.formatDate(order.orderDate)),
                               if (order.quotationId != null)
                                 _buildInfoRow('Quotation Ref:', order.quotationId!),
-                              _buildInfoRow('Expected Delivery:', order.expectedDeliveryDate != null ? _dateFormat.format(order.expectedDeliveryDate!.toLocal()) : 'Not Set'),
+                              _buildInfoRow('Expected Delivery:', order.expectedDeliveryDate != null ? FormatHelper.formatDate(order.expectedDeliveryDate!) : 'Not Set'),
                               if (order.remarks != null && order.remarks!.isNotEmpty)
                                 _buildInfoRow('Remarks:', order.remarks!),
                             ],
@@ -244,8 +243,8 @@ class _SalesOrderViewScreenState extends ConsumerState<SalesOrderViewScreen> {
                                   return ListTile(
                                     contentPadding: EdgeInsets.zero,
                                     title: Text(item.product?['name'] ?? 'Product ${item.productId}'),
-                                    subtitle: Text('${item.quantity} x ${_currencyFormat.format(item.unitPrice)}'),
-                                    trailing: Text(_currencyFormat.format(item.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
+                                    subtitle: Text('${item.quantity} x ${FormatHelper.formatCurrency(item.unitPrice)}'),
+                                    trailing: Text(FormatHelper.formatCurrency(item.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
                                   );
                                 },
                               ),
@@ -292,7 +291,7 @@ class _SalesOrderViewScreenState extends ConsumerState<SalesOrderViewScreen> {
         children: [
           Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: isBold ? 16 : 14)),
           Text(
-            _currencyFormat.format(value),
+            FormatHelper.formatCurrency(value),
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
               fontSize: isBold ? 16 : 14,

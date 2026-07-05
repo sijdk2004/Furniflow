@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/sales_order_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
 
@@ -16,8 +17,6 @@ class SalesOrdersScreen extends ConsumerStatefulWidget {
 
 class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
   String _searchQuery = '';
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
-  final _dateFormat = DateFormat('MMM dd, yyyy');
 
   @override
   void initState() {
@@ -209,7 +208,7 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
 
   Widget _buildRow(dynamic o, ThemeData theme) {
     final estDelivery = o.expectedDeliveryDate != null
-        ? _dateFormat.format(o.expectedDeliveryDate!.toLocal())
+        ? FormatHelper.formatDate(o.expectedDeliveryDate!)
         : 'Not Set';
 
     return Container(
@@ -242,7 +241,7 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
           Expanded(
             flex: 14,
             child: Text(
-              _dateFormat.format(o.orderDate.toLocal()),
+              FormatHelper.formatDate(o.orderDate),
               style: theme.textTheme.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
@@ -262,7 +261,7 @@ class _SalesOrdersScreenState extends ConsumerState<SalesOrdersScreen> {
           Expanded(
             flex: 14,
             child: Text(
-              _currencyFormat.format(o.totalAmount),
+              FormatHelper.formatCurrency(o.totalAmount),
               style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
               overflow: TextOverflow.ellipsis,
             ),

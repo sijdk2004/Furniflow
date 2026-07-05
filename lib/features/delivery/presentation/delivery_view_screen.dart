@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../../../core/theme/colors.dart';
 import '../data/delivery_provider.dart';
 import 'widgets/delivery_timeline.dart';
@@ -160,9 +160,9 @@ class _DeliveryViewScreenState extends ConsumerState<DeliveryViewScreen> {
             _buildDetailRow('Production Order', delivery['order_number']),
             _buildDetailRow('Customer', delivery['customer_name']),
             _buildDetailRow('Product', delivery['product']),
-            _buildDetailRow('Expected Delivery', DateFormat('MMM dd, yyyy').format(DateTime.parse(delivery['expected_delivery_date']))),
+            _buildDetailRow('Expected Delivery', FormatHelper.formatDate(DateTime.parse(delivery['expected_delivery_date']))),
             if (delivery['delivery_date'] != null)
-              _buildDetailRow('Actual Delivery', DateFormat('MMM dd, yyyy').format(DateTime.parse(delivery['delivery_date']))),
+              _buildDetailRow('Actual Delivery', FormatHelper.formatDate(DateTime.parse(delivery['delivery_date']))),
             const Divider(color: AppColors.borderDark, height: 32),
             _buildDetailRow('Assigned Vehicle', delivery['assigned_vehicle'] ?? 'Not Assigned'),
             _buildDetailRow('Assigned Driver', delivery['assigned_driver'] ?? 'Not Assigned'),

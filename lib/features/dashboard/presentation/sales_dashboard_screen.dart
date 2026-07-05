@@ -90,7 +90,7 @@ class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
                           children: [
                             Row(
                               children: [
-                                Expanded(child: GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')).animate().fade(delay: 100.ms).slideY(begin: 0.1)),
+                                 Expanded(child: GradientKpiCard(title: 'Total Revenue', value: '₹${totalRevFormatted}k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')).animate().fade(delay: 100.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
                                 Expanded(child: GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['sales_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders?status=active')).animate().fade(delay: 200.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
@@ -106,9 +106,9 @@ class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
                                 const SizedBox(width: 16),
                                 Expanded(child: GradientKpiCard(title: 'Converted Quotations', value: '${kpis['converted_quotations'] ?? 0}', subtitle: '${kpis['quotation_conversion_rate']?.toStringAsFixed(2) ?? '0.00'}% Rate', icon: LucideIcons.medal, gradientColors: [Colors.green, Colors.green], onTap: () => context.go('/quotations?status=converted')).animate().fade(delay: 600.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
-                                Expanded(child: GradientKpiCard(title: 'Average Order Value', value: '\$$aovFormatted', subtitle: 'AOV', icon: LucideIcons.tag, gradientColors: [Colors.lightBlue, Colors.lightBlue], onTap: () => context.go('/sales-orders')).animate().fade(delay: 700.ms).slideY(begin: 0.1)),
+                                Expanded(child: GradientKpiCard(title: 'Average Order Value', value: '₹$aovFormatted', subtitle: 'AOV', icon: LucideIcons.tag, gradientColors: [Colors.lightBlue, Colors.lightBlue], onTap: () => context.go('/sales-orders')).animate().fade(delay: 700.ms).slideY(begin: 0.1)),
                                 const SizedBox(width: 16),
-                                Expanded(child: GradientKpiCard(title: 'Monthly Revenue', value: '\$$monthlyRevFormatted\k', subtitle: 'This Month', icon: LucideIcons.dollarSign, gradientColors: [Colors.pink, Colors.pink], onTap: () => context.go('/sales-orders')).animate().fade(delay: 800.ms).slideY(begin: 0.1)),
+                                 Expanded(child: GradientKpiCard(title: 'Monthly Revenue', value: '₹${monthlyRevFormatted}k', subtitle: 'This Month', icon: LucideIcons.indianRupee, gradientColors: [Colors.pink, Colors.pink], onTap: () => context.go('/sales-orders')).animate().fade(delay: 800.ms).slideY(begin: 0.1)),
                               ],
                             ),
                           ],
@@ -116,7 +116,7 @@ class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
                       } else {
                         return Column(
                           children: [
-                            GradientKpiCard(title: 'Total Revenue', value: '\$$totalRevFormatted\k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')),
+                            GradientKpiCard(title: 'Total Revenue', value: '₹${totalRevFormatted}k', subtitle: '+${(kpis['revenue_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.trendingUp, gradientColors: [Colors.teal, Colors.teal], onTap: () => context.go('/sales-orders')),
                             const SizedBox(height: 16),
                             GradientKpiCard(title: 'Sales Orders', value: '${kpis['sales_orders'] ?? 0}', subtitle: '+${(kpis['sales_orders_growth'] as num? ?? 0).toStringAsFixed(2)}%', icon: LucideIcons.shoppingCart, gradientColors: [Colors.blue, Colors.blue], onTap: () => context.go('/sales-orders')),
                             const SizedBox(height: 16),
@@ -261,7 +261,7 @@ class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 40,
-                      getTitlesWidget: (value, meta) => Text('\$${value.toInt()}k', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      getTitlesWidget: (value, meta) => Text('₹${value.toInt()}k', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     ),
                   ),
                   rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -386,7 +386,7 @@ class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('\$${item['amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                        Text('₹${item['amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
                         Text(item['status'] ?? '', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
@@ -435,7 +435,7 @@ class _SalesDashboardScreenState extends ConsumerState<SalesDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text('\$${item['amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+                        Text('₹${item['amount'] ?? 0}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
                       ],
                     ),
                   );

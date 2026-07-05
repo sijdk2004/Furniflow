@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../data/bom_providers.dart';
+import '../data/bom_provider.dart';
 import '../domain/bom_model.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class BomScreen extends ConsumerStatefulWidget {
   const BomScreen({super.key});
@@ -19,10 +20,14 @@ class _BomScreenState extends ConsumerState<BomScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final boms = ref.watch(bomsProvider).where((b) => 
-      b.productName.toLowerCase().contains(_searchQuery.toLowerCase()) || 
-      b.id.toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    final bomsState = ref.watch(bomProvider);
+    final boms = bomsState.maybeWhen(
+      data: (data) => data.where((b) => 
+        (b.product?['product_name']?.toString().toLowerCase() ?? 'unknown').contains(_searchQuery.toLowerCase()) || 
+        b.id.toLowerCase().contains(_searchQuery.toLowerCase())
+      ).toList(),
+      orElse: () => <Bom>[],
+    );
 
     return Scaffold(
       body: Column(
@@ -126,7 +131,7 @@ class _BomScreenState extends ConsumerState<BomScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(bom.productName, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                          Text(bom.product?['product_name'] ?? 'Unknown', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                           const SizedBox(width: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -134,7 +139,7 @@ class _BomScreenState extends ConsumerState<BomScreen> {
                               color: theme.colorScheme.surfaceVariant,
                               borderRadius: BorderRadius.circular(4),
                             ),
-                            child: Text(bom.version, style: theme.textTheme.bodySmall),
+                            child: Text('v${bom.versionNumber}', style: theme.textTheme.bodySmall),
                           ),
                         ],
                       ),
@@ -185,10 +190,10 @@ class _BomScreenState extends ConsumerState<BomScreen> {
                       children: [
                         Icon(LucideIcons.cornerDownRight, size: 16, color: theme.dividerColor),
                         const SizedBox(width: 12),
-                        Text(item.materialId, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(item.componentId, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(width: 16),
-                        Expanded(child: Text(item.materialName)),
-                        Text('${item.quantity} ${item.unit}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Expanded(child: Text(item.component?['product_name'] ?? 'Unknown Component')),
+                        Text('${item.quantity} ${item.uom?['code'] ?? 'Units'}', style: const TextStyle(fontWeight: FontWeight.bold)),
                       ],
                     ),
                   )),
@@ -225,9 +230,10 @@ class _BomScreenState extends ConsumerState<BomScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Target Product'),
-                      items: ['Executive Desk', 'Dining Chair', 'Minimalist Wardrobe'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    SearchableDropdown<String>(
+                      label: 'Target Product',
+                      items: const ['Executive Desk', 'Dining Chair', 'Minimalist Wardrobe'],
+                      itemAsString: (e) => e,
                       onChanged: (v) {},
                     ),
                     const SizedBox(height: 16),
@@ -236,9 +242,10 @@ class _BomScreenState extends ConsumerState<BomScreen> {
                         Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'BOM Reference No.'))),
                         const SizedBox(width: 16),
                         Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Status'),
-                            items: ['Draft', 'Active'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                          child: SearchableDropdown<String>(
+                            label: 'Status',
+                            items: const ['Draft', 'Active'],
+                            itemAsString: (e) => e,
                             onChanged: (v) {},
                           ),
                         ),
@@ -255,9 +262,10 @@ class _BomScreenState extends ConsumerState<BomScreen> {
                           const SizedBox(width: 8),
                           Expanded(flex: 1, child: TextFormField(decoration: const InputDecoration(labelText: 'Qty', isDense: true))),
                           const SizedBox(width: 8),
-                          Expanded(flex: 2, child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(labelText: 'Unit', isDense: true),
-                            items: ['pcs', 'm', 'sqm', 'kg'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                          Expanded(flex: 2, child: SearchableDropdown<String>(
+                            label: 'Unit',
+                            items: const ['pcs', 'm', 'sqm', 'kg'],
+                            itemAsString: (e) => e,
                             onChanged: (v) {},
                           )),
                           IconButton(

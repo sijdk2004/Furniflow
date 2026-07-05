@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/inquiry_providers.dart';
 import '../domain/inquiry_model.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class InquiriesScreen extends ConsumerStatefulWidget {
   const InquiriesScreen({super.key});
@@ -149,7 +150,7 @@ class _InquiriesScreenState extends ConsumerState<InquiriesScreen> {
                   ),
                 ),
                 Text(
-                  DateFormat('MMM d').format(inquiry.dateReceived),
+                  FormatHelper.formatDate(inquiry.dateReceived),
                   style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               ],
@@ -197,7 +198,7 @@ class _InquiriesScreenState extends ConsumerState<InquiriesScreen> {
                   ],
                 ),
                 Text(
-                  '\$${NumberFormat('#,##0').format(inquiry.estimatedValue)}',
+                  FormatHelper.formatCurrency(inquiry.estimatedValue),
                   style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
@@ -244,8 +245,8 @@ class _InquiriesScreenState extends ConsumerState<InquiriesScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _buildDetailRow('Received', DateFormat('MMM d, yyyy').format(inquiry.dateReceived))),
-                  Expanded(child: _buildDetailRow('Est. Value', '\$${NumberFormat('#,##0').format(inquiry.estimatedValue)}')),
+                  Expanded(child: _buildDetailRow('Received', FormatHelper.formatDate(inquiry.dateReceived))),
+                  Expanded(child: _buildDetailRow('Est. Value', FormatHelper.formatCurrency(inquiry.estimatedValue))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -298,20 +299,22 @@ class _InquiriesScreenState extends ConsumerState<InquiriesScreen> {
             children: [
               TextFormField(decoration: const InputDecoration(labelText: 'Inquiry Subject / Title')),
               const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Customer / Lead'),
-                items: ['Jenkins Interiors', 'Chang Furniture', 'New Lead...'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              SearchableDropdown<String>(
+                label: 'Customer / Lead',
+                items: const ['Jenkins Interiors', 'Chang Furniture', 'New Lead...'],
+                itemAsString: (e) => e,
                 onChanged: (v) {},
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'Estimated Value (\$)'))),
+                  Expanded(child: TextFormField(decoration: const InputDecoration(labelText: 'Estimated Value (₹)'))),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: DropdownButtonFormField<String>(
-                      decoration: const InputDecoration(labelText: 'Priority'),
-                      items: ['High', 'Medium', 'Low'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    child: SearchableDropdown<String>(
+                      label: 'Priority',
+                      items: const ['High', 'Medium', 'Low'],
+                      itemAsString: (e) => e,
                       onChanged: (v) {},
                     ),
                   ),

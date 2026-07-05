@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 import '../data/quotation_api_provider.dart';
 import '../../customers/data/customer_provider.dart';
 import '../../catalog/data/product_api_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../catalog/domain/product_model_api.dart';
+import '../../customers/domain/customer_model.dart';
 class QuotationFormScreen extends ConsumerStatefulWidget {
   final String? id;
   const QuotationFormScreen({super.key, this.id});
@@ -137,23 +141,22 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                         children: [
                           Expanded(
                             child: customersFuture.when(
-                              data: (data) => DropdownButtonFormField<String>(
-                                decoration: const InputDecoration(labelText: 'Customer *', border: OutlineInputBorder()),
-                                value: _selectedCustomer,
-                                items: data.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-                                onChanged: (val) => setState(() => _selectedCustomer = val),
+                              data: (data) => SearchableDropdown<CustomerModel>(
+                                label: 'Customer',
+                                isRequired: true,
+                                items: data,
+                                itemAsString: (c) => c.name,
+                                selectedItem: data.where((c) => c.id == _selectedCustomer).firstOrNull,
+                                onChanged: (val) => setState(() => _selectedCustomer = val?.id),
                                 validator: (v) => v == null ? 'Required' : null,
                               ),
-                              loading: () => DropdownButtonFormField<String>(
-                                decoration: const InputDecoration(labelText: 'Customer *', border: OutlineInputBorder()),
-                                items: const [],
-                                onChanged: null,
-                                hint: const Text('Loading...'),
+                              loading: () => TextFormField(
+                                enabled: false,
+                                decoration: const InputDecoration(labelText: 'Customer *', border: OutlineInputBorder(), hintText: 'Loading...'),
                               ),
-                              error: (e, s) => DropdownButtonFormField<String>(
+                              error: (e, s) => TextFormField(
+                                enabled: false,
                                 decoration: const InputDecoration(labelText: 'Customer *', border: OutlineInputBorder(), errorText: 'Failed to load'),
-                                items: const [],
-                                onChanged: null,
                               ),
                             ),
                           ),
@@ -171,7 +174,7 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                               },
                               child: InputDecorator(
                                 decoration: const InputDecoration(labelText: 'Valid Until *', border: OutlineInputBorder()),
-                                child: Text(DateFormat('yyyy-MM-dd').format(_validUntil)),
+                                child: Text(FormatHelper.formatDate(_validUntil)),
                               ),
                             ),
                           )
@@ -200,29 +203,27 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                               Expanded(
                                 flex: 3,
                                 child: productsFuture.when(
-                                  data: (data) => DropdownButtonFormField<String>(
-                                    decoration: const InputDecoration(labelText: 'Product', border: OutlineInputBorder()),
-                                    value: item.productId,
-                                    items: data.map((p) => DropdownMenuItem(value: p.id, child: Text(p.productName))).toList(),
+                                  data: (data) => SearchableDropdown<ProductModel>(
+                                    label: 'Product',
+                                    items: data,
+                                    itemAsString: (p) => p.productName,
+                                    selectedItem: data.where((p) => p.id == item.productId).firstOrNull,
                                     onChanged: (val) {
-                                      setState(() {
-                                        item.productId = val;
-                                        // Auto fill price
-                                        final product = data.firstWhere((p) => p.id == val);
-                                        item.unitPrice = product.basePrice;
-                                      });
+                                      if (val != null) {
+                                        setState(() {
+                                          item.productId = val.id;
+                                          item.unitPrice = val.basePrice;
+                                        });
+                                      }
                                     },
                                   ),
-                                  loading: () => DropdownButtonFormField<String>(
-                                    decoration: const InputDecoration(labelText: 'Product', border: OutlineInputBorder()),
-                                    items: const [],
-                                    onChanged: null,
-                                    hint: const Text('Loading...'),
+                                  loading: () => TextFormField(
+                                    enabled: false,
+                                    decoration: const InputDecoration(labelText: 'Product', border: OutlineInputBorder(), hintText: 'Loading...'),
                                   ),
-                                  error: (e, s) => DropdownButtonFormField<String>(
+                                  error: (e, s) => TextFormField(
+                                    enabled: false,
                                     decoration: const InputDecoration(labelText: 'Product', border: OutlineInputBorder(), errorText: 'Failed to load'),
-                                    items: const [],
-                                    onChanged: null,
                                   ),
                                 ),
                               ),
@@ -253,7 +254,7 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                                 child: Container(
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(4)),
-                                  child: Text('\$${NumberFormat('#,##0.00').format(item.quantity * item.unitPrice)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  child: Text(FormatHelper.formatCurrency(item.quantity * item.unitPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
                               IconButton(
@@ -304,14 +305,14 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                               children: [
                                 TextFormField(
                                   controller: _discountCtrl,
-                                  decoration: const InputDecoration(labelText: 'Discount', border: OutlineInputBorder(), prefixText: '\$'),
+                                  decoration: const InputDecoration(labelText: 'Discount', border: OutlineInputBorder(), prefixText: '₹'),
                                   keyboardType: TextInputType.number,
                                   onChanged: (_) => setState((){}),
                                 ),
                                 const SizedBox(height: 16),
                                 TextFormField(
                                   controller: _taxCtrl,
-                                  decoration: const InputDecoration(labelText: 'Tax', border: OutlineInputBorder(), prefixText: '\$'),
+                                  decoration: const InputDecoration(labelText: 'Tax', border: OutlineInputBorder(), prefixText: '₹'),
                                   keyboardType: TextInputType.number,
                                   onChanged: (_) => setState((){}),
                                 ),
@@ -330,7 +331,7 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         children: [
                                           Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
-                                          Text('\$${NumberFormat('#,##0.00').format(total)}', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
+                                          Text(FormatHelper.formatCurrency(total), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
                                         ],
                                       ),
                                     );

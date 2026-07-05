@@ -250,7 +250,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          '\$${product.basePrice.toStringAsFixed(2)}',
+                          '₹${product.basePrice.toStringAsFixed(2)}',
                           style: theme.textTheme.titleMedium?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.bold,
@@ -335,7 +335,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('\$${product.basePrice.toStringAsFixed(2)}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      Text('₹${product.basePrice.toStringAsFixed(2)}', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Row(
                         children: [

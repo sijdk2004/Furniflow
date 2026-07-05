@@ -6,6 +6,9 @@ import '../data/production_order_provider.dart';
 import '../../catalog/data/product_api_provider.dart';
 import '../../sales_orders/data/sales_order_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
+import '../../catalog/domain/product_model_api.dart';
+import '../../sales_orders/domain/sales_order_model.dart';
 
 class ProductionOrderCreateScreen extends ConsumerStatefulWidget {
   const ProductionOrderCreateScreen({super.key});
@@ -94,21 +97,12 @@ class _ProductionOrderCreateScreenState extends ConsumerState<ProductionOrderCre
                           // Sales Order Selection (Optional)
                           salesOrdersAsync.when(
                             data: (orders) {
-                              return DropdownButtonFormField<String>(
-                                value: _selectedSalesOrderId,
-                                decoration: const InputDecoration(
-                                  labelText: 'Link to Sales Order (Optional)',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(LucideIcons.shoppingCart, size: 20),
-                                ),
-                                items: [
-                                  const DropdownMenuItem(value: null, child: Text('None (Make to Stock)')),
-                                  ...orders.map((o) => DropdownMenuItem(
-                                    value: o.id,
-                                    child: Text('SO-${o.id.length > 8 ? o.id.substring(0,8) : o.id} - ${o.customer?['name'] ?? 'Unknown'}'),
-                                  )),
-                                ],
-                                onChanged: (val) => setState(() => _selectedSalesOrderId = val),
+                              return SearchableDropdown<SalesOrder>(
+                                label: 'Link to Sales Order (Optional)',
+                                items: orders,
+                                itemAsString: (o) => 'SO-${o.id.length > 8 ? o.id.substring(0,8) : o.id} - ${o.customer?['name'] ?? 'Unknown'}',
+                                selectedItem: orders.where((o) => o.id == _selectedSalesOrderId).firstOrNull,
+                                onChanged: (val) => setState(() => _selectedSalesOrderId = val?.id),
                               );
                             },
                             loading: () => const LinearProgressIndicator(),
@@ -119,19 +113,13 @@ class _ProductionOrderCreateScreenState extends ConsumerState<ProductionOrderCre
                           // Product Selection
                           productsAsync.when(
                             data: (products) {
-                              return DropdownButtonFormField<String>(
-                                value: _selectedProductId,
-                                decoration: const InputDecoration(
-                                  labelText: 'Product to Manufacture *',
-                                  border: OutlineInputBorder(),
-                                  prefixIcon: Icon(LucideIcons.box, size: 20),
-                                  helperText: 'Only products with an Active BOM can be manufactured',
-                                ),
-                                items: products.map((p) => DropdownMenuItem(
-                                  value: p.id,
-                                  child: Text('${p.productCode} - ${p.productName}'),
-                                )).toList(),
-                                onChanged: (val) => setState(() => _selectedProductId = val),
+                              return SearchableDropdown<ProductModel>(
+                                label: 'Product to Manufacture',
+                                isRequired: true,
+                                items: products,
+                                itemAsString: (p) => '${p.productCode} - ${p.productName}',
+                                selectedItem: products.where((p) => p.id == _selectedProductId).firstOrNull,
+                                onChanged: (val) => setState(() => _selectedProductId = val?.id),
                                 validator: (val) => val == null ? 'Please select a product' : null,
                               );
                             },

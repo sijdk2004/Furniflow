@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/delivery_provider.dart';
 
 class DeliveryListScreen extends ConsumerStatefulWidget {
@@ -15,7 +16,7 @@ class DeliveryListScreen extends ConsumerStatefulWidget {
 
 class _DeliveryListScreenState extends ConsumerState<DeliveryListScreen> {
   String _searchQuery = '';
-  final _dateFormat = DateFormat('MMM dd, yyyy');
+
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -180,7 +181,7 @@ class _DeliveryListScreenState extends ConsumerState<DeliveryListScreen> {
                                             flex: 16,
                                             child: Text(
                                               expectedDate != null
-                                                  ? _dateFormat.format(expectedDate)
+                                                  ? FormatHelper.formatDate(expectedDate)
                                                   : '-',
                                               style: theme.textTheme.bodyMedium,
                                               overflow: TextOverflow.ellipsis,

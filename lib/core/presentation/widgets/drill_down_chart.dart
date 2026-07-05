@@ -173,7 +173,7 @@ class _DrillDownBarChartState extends State<DrillDownBarChart> {
                         ),
                         children: <TextSpan>[
                           TextSpan(
-                            text: '\$${(rod.toY / 1000).toStringAsFixed(1)}k',
+                            text: '₹${(rod.toY / 1000).toStringAsFixed(1)}k',
                             style: const TextStyle(
                               color: Colors.greenAccent,
                               fontSize: 14,
@@ -220,7 +220,7 @@ class _DrillDownBarChartState extends State<DrillDownBarChart> {
                         return Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: Text(
-                            '\$${(value / 1000).toInt()}k',
+                            '₹${(value / 1000).toInt()}k',
                             style: const TextStyle(color: Colors.grey, fontSize: 10),
                             textAlign: TextAlign.right,
                           ),

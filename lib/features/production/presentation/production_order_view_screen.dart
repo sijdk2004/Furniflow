@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
+import '../../../core/utils/format_helper.dart';
 import '../data/production_order_provider.dart';
 
 class ProductionOrderViewScreen extends ConsumerStatefulWidget {
@@ -14,8 +16,6 @@ class ProductionOrderViewScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductionOrderViewScreenState extends ConsumerState<ProductionOrderViewScreen> {
-  final _currencyFormat = NumberFormat.currency(symbol: '\$');
-  final _dateFormat = DateFormat('MMM dd, yyyy HH:mm');
 
   final List<String> _workflowSteps = ['Draft', 'Released', 'In Progress', 'Completed'];
 
@@ -128,7 +128,7 @@ class _ProductionOrderViewScreenState extends ConsumerState<ProductionOrderViewS
                       children: [
                         Text('Order: PRD-${order.id.substring(0,8).toUpperCase()}', style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text('Created on ${_dateFormat.format(order.createdOn.toLocal())}', style: theme.textTheme.bodyMedium),
+                        Text('Created on ${FormatHelper.formatDateTime24(order.createdOn)}', style: theme.textTheme.bodyMedium),
                       ],
                     ),
                     // Action Buttons based on status
@@ -265,7 +265,7 @@ class _ProductionOrderViewScreenState extends ConsumerState<ProductionOrderViewS
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, color: isBold ? null : Colors.grey.shade700)),
-          Text(_currencyFormat.format(amount), style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.w600)),
+          Text(FormatHelper.formatCurrency(amount), style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.w600)),
         ],
       ),
     );

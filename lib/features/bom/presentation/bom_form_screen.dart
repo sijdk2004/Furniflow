@@ -7,6 +7,7 @@ import '../../catalog/data/product_api_provider.dart';
 import '../../../core/network/providers/network_providers.dart';
 import '../../catalog/domain/product_model_api.dart';
 import '../../master_data/domain/master_data_model.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class BomFormScreen extends ConsumerStatefulWidget {
   final String? bomId;
@@ -159,14 +160,13 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
                     children: [
                       const Text('BOM Details', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 24),
-                      DropdownButtonFormField<String>(
-                        value: _selectedProductId,
-                        decoration: const InputDecoration(labelText: 'Target Product *'),
-                        items: _products.map((p) => DropdownMenuItem<String>(
-                          value: p.id,
-                          child: Text('${p.productCode} - ${p.productName}'),
-                        )).toList(),
-                        onChanged: (val) => setState(() => _selectedProductId = val),
+                      SearchableDropdown<ProductModel>(
+                        label: 'Target Product',
+                        isRequired: true,
+                        items: _products,
+                        itemAsString: (p) => '${p.productCode} - ${p.productName}',
+                        selectedItem: _products.where((p) => p.id == _selectedProductId).firstOrNull,
+                        onChanged: (val) => setState(() => _selectedProductId = val?.id),
                         validator: (val) => val == null ? 'Required' : null,
                       ),
                       const SizedBox(height: 16),
@@ -232,14 +232,13 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
                             children: [
                               Expanded(
                                 flex: 3,
-                                child: DropdownButtonFormField<String>(
-                                  value: item['component_id'],
-                                  decoration: InputDecoration(labelText: 'Component ${idx + 1} *', isDense: true),
-                                  items: _products.map((p) => DropdownMenuItem<String>(
-                                    value: p.id,
-                                    child: Text('${p.productCode} - ${p.productName}'),
-                                  )).toList(),
-                                  onChanged: (val) => setState(() => item['component_id'] = val),
+                                child: SearchableDropdown<ProductModel>(
+                                  label: 'Component ${idx + 1}',
+                                  isRequired: true,
+                                  items: _products,
+                                  itemAsString: (p) => '${p.productCode} - ${p.productName}',
+                                  selectedItem: _products.where((p) => p.id == item['component_id']).firstOrNull,
+                                  onChanged: (val) => setState(() => item['component_id'] = val?.id),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -255,14 +254,13 @@ class _BomFormScreenState extends ConsumerState<BomFormScreen> {
                               const SizedBox(width: 16),
                               Expanded(
                                 flex: 2,
-                                child: DropdownButtonFormField<String>(
-                                  value: item['uom_id'],
-                                  decoration: const InputDecoration(labelText: 'UOM *', isDense: true),
-                                  items: _uoms.map((u) => DropdownMenuItem<String>(
-                                    value: u.id,
-                                    child: Text(u.code),
-                                  )).toList(),
-                                  onChanged: (val) => setState(() => item['uom_id'] = val),
+                                child: SearchableDropdown<MasterDataModel>(
+                                  label: 'UOM',
+                                  isRequired: true,
+                                  items: _uoms,
+                                  itemAsString: (u) => u.code,
+                                  selectedItem: _uoms.where((u) => u.id == item['uom_id']).firstOrNull,
+                                  onChanged: (val) => setState(() => item['uom_id'] = val?.id),
                                 ),
                               ),
                               const SizedBox(width: 16),

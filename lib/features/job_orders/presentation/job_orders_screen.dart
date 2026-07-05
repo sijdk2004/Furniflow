@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../data/job_order_providers.dart';
 import '../domain/job_order_model.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class JobOrdersScreen extends ConsumerStatefulWidget {
   const JobOrdersScreen({super.key});
@@ -352,9 +353,11 @@ class _JobOrdersScreenState extends ConsumerState<JobOrdersScreen> {
               CheckboxListTile(title: const Text('Finishing & QA'), value: false, onChanged: (v) {}),
               const SizedBox(height: 16),
               const Text('Format', style: TextStyle(fontWeight: FontWeight.bold)),
-              DropdownButtonFormField<String>(
-                value: 'A4 Landscape',
-                items: ['A4 Landscape', 'A3 Poster', 'Digital PDF'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+              SearchableDropdown<String>(
+                label: 'Format',
+                items: const ['A4 Landscape', 'A3 Poster', 'Digital PDF'],
+                itemAsString: (e) => e,
+                selectedItem: 'A4 Landscape',
                 onChanged: (v) {},
               ),
             ],

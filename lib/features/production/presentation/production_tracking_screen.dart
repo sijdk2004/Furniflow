@@ -6,6 +6,7 @@ import '../../../core/theme/colors.dart';
 import '../../../features/auth/presentation/rbac_provider.dart';
 import '../data/production_tracking_provider.dart';
 import 'widgets/production_timeline.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class ProductionTrackingScreen extends ConsumerWidget {
   final String trackingId;
@@ -292,12 +293,11 @@ class ProductionTrackingScreen extends ConsumerWidget {
               children: [
                 Text('Current: ${tracking.currentStage}', style: const TextStyle(color: Colors.white54)),
                 const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  value: nextStage,
-                  dropdownColor: AppColors.surfaceDark,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(labelText: 'Next Stage'),
-                  items: stages.sublist(currentIndex).map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                SearchableDropdown<String>(
+                  label: 'Next Stage',
+                  items: stages.sublist(currentIndex),
+                  itemAsString: (s) => s,
+                  selectedItem: nextStage,
                   onChanged: (val) {
                     if (val != null) nextStage = val;
                   },
