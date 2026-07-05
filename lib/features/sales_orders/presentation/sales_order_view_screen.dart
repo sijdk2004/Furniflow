@@ -242,7 +242,29 @@ class _SalesOrderViewScreenState extends ConsumerState<SalesOrderViewScreen> {
                                   final item = order.items[index];
                                   return ListTile(
                                     contentPadding: EdgeInsets.zero,
-                                    title: Text(item.product?['name'] ?? 'Product ${item.productId}'),
+                                    title: Row(
+                                      children: [
+                                        if (item.product?['product_code'] != null)
+                                          Container(
+                                            margin: const EdgeInsets.only(right: 8),
+                                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: Theme.of(context).colorScheme.primaryContainer,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              item.product!['product_code'],
+                                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                                            ),
+                                          ),
+                                        Expanded(
+                                          child: Text(
+                                            item.product?['product_name'] ?? item.product?['name'] ?? 'Product ${item.productId.substring(0, 8)}...',
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                     subtitle: Text('${item.quantity} x ${FormatHelper.formatCurrency(item.unitPrice)}'),
                                     trailing: Text(FormatHelper.formatCurrency(item.totalPrice), style: const TextStyle(fontWeight: FontWeight.bold)),
                                   );

@@ -111,7 +111,7 @@ class QuotationViewScreen extends ConsumerWidget {
                             TableRow(
                               decoration: BoxDecoration(color: Colors.grey[100]),
                               children: const [
-                                Padding(padding: EdgeInsets.all(8), child: Text('Product ID', style: TextStyle(fontWeight: FontWeight.bold))),
+                                Padding(padding: EdgeInsets.all(8), child: Text('Product', style: TextStyle(fontWeight: FontWeight.bold))),
                                 Padding(padding: EdgeInsets.all(8), child: Text('Qty', style: TextStyle(fontWeight: FontWeight.bold))),
                                 Padding(padding: EdgeInsets.all(8), child: Text('Unit Price', style: TextStyle(fontWeight: FontWeight.bold))),
                                 Padding(padding: EdgeInsets.all(8), child: Text('Total', style: TextStyle(fontWeight: FontWeight.bold))),
@@ -119,7 +119,20 @@ class QuotationViewScreen extends ConsumerWidget {
                             ),
                             ...q.items.map((i) => TableRow(
                               children: [
-                                Padding(padding: const EdgeInsets.all(8), child: Text(i.productId)),
+                                Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (i.productCode != null)
+                                        Text(i.productCode!, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                                      Text(
+                                        i.productName ?? i.productId,
+                                        style: TextStyle(fontSize: i.productName != null ? 13 : 11, color: i.productName != null ? null : Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 Padding(padding: const EdgeInsets.all(8), child: Text(i.quantity.toString())),
                                 Padding(padding: const EdgeInsets.all(8), child: Text(FormatHelper.formatCurrency(i.unitPrice))),
                                 Padding(padding: const EdgeInsets.all(8), child: Text(FormatHelper.formatCurrency((i.totalPrice ?? 0.0)))),

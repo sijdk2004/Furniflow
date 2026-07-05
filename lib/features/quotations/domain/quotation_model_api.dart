@@ -1,6 +1,8 @@
 class QuotationItemModel {
   final String? id;
   final String productId;
+  final String? productName;
+  final String? productCode;
   final int quantity;
   final double unitPrice;
   final double? totalPrice;
@@ -8,15 +10,20 @@ class QuotationItemModel {
   QuotationItemModel({
     this.id,
     required this.productId,
+    this.productName,
+    this.productCode,
     required this.quantity,
     required this.unitPrice,
     this.totalPrice,
   });
 
   factory QuotationItemModel.fromJson(Map<String, dynamic> json) {
+    final product = json['product'] as Map<String, dynamic>?;
     return QuotationItemModel(
       id: json['id'],
       productId: json['product_id'],
+      productName: product?['product_name'] as String?,
+      productCode: product?['product_code'] as String?,
       quantity: json['quantity'],
       unitPrice: (json['unit_price'] as num).toDouble(),
       totalPrice: json['total_price'] != null ? (json['total_price'] as num).toDouble() : null,
