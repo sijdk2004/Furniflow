@@ -11,6 +11,8 @@ import '../../catalog/data/product_api_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
 import '../../catalog/domain/product_model_api.dart';
 import '../../customers/domain/customer_model.dart';
+import '../../usr/data/users_provider.dart';
+import '../../usr/domain/user_model.dart';
 class QuotationFormScreen extends ConsumerStatefulWidget {
   final String? id;
   const QuotationFormScreen({super.key, this.id});
@@ -33,7 +35,10 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
   DateTime _validUntil = DateTime.now().add(const Duration(days: 30));
   final _discountCtrl = TextEditingController(text: '0.0');
   final _taxCtrl = TextEditingController(text: '0.0');
+  final _advanceAmountCtrl = TextEditingController(text: '0.0');
   final _notesCtrl = TextEditingController();
+  final _quotationNumberCtrl = TextEditingController();
+  String? _selectedSalesPerson;
 
   List<_QuotationItemState> _items = [_QuotationItemState()];
   bool _isLoading = false;
@@ -54,7 +59,10 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
       _validUntil = q.validUntil;
       _discountCtrl.text = q.discount.toString();
       _taxCtrl.text = q.tax.toString();
+      _advanceAmountCtrl.text = q.advanceAmount.toString();
       _notesCtrl.text = q.notes ?? '';
+      _quotationNumberCtrl.text = q.quotationNumber ?? '';
+      _selectedSalesPerson = q.salesPerson;
       
       _items = q.items.map((i) => _QuotationItemState(
         productId: i.productId,
@@ -86,7 +94,10 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
       'valid_until': '${_validUntil.toUtc().toIso8601String().split('T')[0]}T00:00:00Z',
       'discount': double.tryParse(_discountCtrl.text) ?? 0.0,
       'tax': double.tryParse(_taxCtrl.text) ?? 0.0,
+      'advance_amount': double.tryParse(_advanceAmountCtrl.text) ?? 0.0,
       'notes': _notesCtrl.text,
+      'quotation_number': _quotationNumberCtrl.text.isEmpty ? null : _quotationNumberCtrl.text,
+      'sales_person': _selectedSalesPerson,
       'items': _items.map((i) => {
         'product_id': i.productId,
         'quantity': i.quantity,
@@ -140,6 +151,35 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                       Row(
                         children: [
                           Expanded(
+                            child: TextFormField(
+                              controller: _quotationNumberCtrl,
+                              decoration: const InputDecoration(labelText: 'Quotation Number (Optional)', border: OutlineInputBorder(), hintText: 'e.g. No. 373'),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () async {
+                                final d = await showDatePicker(
+                                  context: context, 
+                                  initialDate: _validUntil, 
+                                  firstDate: DateTime.now(), 
+                                  lastDate: DateTime.now().add(const Duration(days: 365))
+                                );
+                                if (d != null) setState(() => _validUntil = d);
+                              },
+                              child: InputDecorator(
+                                decoration: const InputDecoration(labelText: 'Valid Until *', border: OutlineInputBorder()),
+                                child: Text(FormatHelper.formatDate(_validUntil)),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
                             child: customersFuture.when(
                               data: (data) => SearchableDropdown<CustomerModel>(
                                 label: 'Customer',
@@ -162,19 +202,23 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: InkWell(
-                              onTap: () async {
-                                final d = await showDatePicker(
-                                  context: context, 
-                                  initialDate: _validUntil, 
-                                  firstDate: DateTime.now(), 
-                                  lastDate: DateTime.now().add(const Duration(days: 365))
-                                );
-                                if (d != null) setState(() => _validUntil = d);
-                              },
-                              child: InputDecorator(
-                                decoration: const InputDecoration(labelText: 'Valid Until *', border: OutlineInputBorder()),
-                                child: Text(FormatHelper.formatDate(_validUntil)),
+                            child: ref.watch(usersProvider).when(
+                              data: (users) => SearchableDropdown<UserModel>(
+                                label: 'Sales Person',
+                                items: users,
+                                itemAsString: (u) => '${u.firstName} ${u.lastName ?? ''}'.trim(),
+                                selectedItem: users.where((u) => '${u.firstName} ${u.lastName ?? ''}'.trim() == _selectedSalesPerson).firstOrNull,
+                                onChanged: (val) {
+                                  setState(() => _selectedSalesPerson = val != null ? '${val.firstName} ${val.lastName ?? ''}'.trim() : null);
+                                },
+                              ),
+                              loading: () => TextFormField(
+                                enabled: false,
+                                decoration: const InputDecoration(labelText: 'Sales Person', border: OutlineInputBorder(), hintText: 'Loading...'),
+                              ),
+                              error: (e, s) => TextFormField(
+                                enabled: false,
+                                decoration: const InputDecoration(labelText: 'Sales Person', border: OutlineInputBorder(), errorText: 'Failed to load'),
                               ),
                             ),
                           )
@@ -317,21 +361,42 @@ class _QuotationFormScreenState extends ConsumerState<QuotationFormScreen> {
                                   onChanged: (_) => setState((){}),
                                 ),
                                 const SizedBox(height: 16),
+                                TextFormField(
+                                  controller: _advanceAmountCtrl,
+                                  decoration: const InputDecoration(labelText: 'Advance Amount', border: OutlineInputBorder(), prefixText: '₹'),
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) => setState((){}),
+                                ),
+                                const SizedBox(height: 16),
                                 Builder(
                                   builder: (context) {
                                     double subtotal = _items.fold(0, (sum, i) => sum + (i.quantity * i.unitPrice));
                                     double discount = double.tryParse(_discountCtrl.text) ?? 0.0;
                                     double tax = double.tryParse(_taxCtrl.text) ?? 0.0;
+                                    double advanceAmount = double.tryParse(_advanceAmountCtrl.text) ?? 0.0;
                                     double total = subtotal - discount + tax;
+                                    double balance = total - advanceAmount;
                                     
                                     return Container(
                                       padding: const EdgeInsets.all(16),
                                       color: theme.colorScheme.primaryContainer,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      child: Column(
                                         children: [
-                                          Text('Grand Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
-                                          Text(FormatHelper.formatCurrency(total), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text('Grand Total', style: TextStyle(fontSize: 16, color: theme.colorScheme.onPrimaryContainer)),
+                                              Text(FormatHelper.formatCurrency(total), style: TextStyle(fontSize: 16, color: theme.colorScheme.onPrimaryContainer)),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text('Balance Amount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
+                                              Text(FormatHelper.formatCurrency(balance), style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.colorScheme.onPrimaryContainer)),
+                                            ],
+                                          ),
                                         ],
                                       ),
                                     );

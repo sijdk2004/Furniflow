@@ -24,8 +24,13 @@ func NewQuotationHandler(service *services.QuotationService) *QuotationHandler {
 // @Router /v1/system/quotations [get]
 func (h *QuotationHandler) GetQuotations(c *fiber.Ctx) error {
 	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
-	records, err := h.service.GetAll(tenantID)
+	records, err := h.service.GetAll(tenantID, isRestricted, userID)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": err.Error()})
 	}
@@ -45,8 +50,13 @@ func (h *QuotationHandler) GetQuotations(c *fiber.Ctx) error {
 func (h *QuotationHandler) GetQuotation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
-	record, err := h.service.GetByID(id, tenantID)
+	record, err := h.service.GetByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"success": false, "error": "Quotation not found"})
 	}
@@ -94,13 +104,17 @@ func (h *QuotationHandler) UpdateQuotation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	tenantID := c.Locals("tenant_id").(string)
 	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
 	var req dtos.QuotationRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": "Invalid JSON"})
 	}
 
-	record, err := h.service.Update(id, tenantID, userID, req)
+	record, err := h.service.Update(id, tenantID, userID, req, isRestricted)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": err.Error()})
 	}
@@ -122,13 +136,17 @@ func (h *QuotationHandler) UpdateQuotationStatus(c *fiber.Ctx) error {
 	id := c.Params("id")
 	tenantID := c.Locals("tenant_id").(string)
 	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
 	var req dtos.QuotationStatusUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": "Invalid JSON"})
 	}
 
-	if err := h.service.UpdateStatus(id, tenantID, userID, req.Status); err != nil {
+	if err := h.service.UpdateStatus(id, tenantID, userID, req.Status, isRestricted); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": err.Error()})
 	}
 
@@ -147,8 +165,13 @@ func (h *QuotationHandler) UpdateQuotationStatus(c *fiber.Ctx) error {
 func (h *QuotationHandler) DeleteQuotation(c *fiber.Ctx) error {
 	id := c.Params("id")
 	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
-	if err := h.service.Delete(id, tenantID); err != nil {
+	if err := h.service.Delete(id, tenantID, isRestricted, userID); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": err.Error()})
 	}
 

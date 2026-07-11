@@ -14,22 +14,23 @@ func NewSalesOrderRepository(db *gorm.DB) *SalesOrderRepository {
 	return &SalesOrderRepository{db: db}
 }
 
-func (r *SalesOrderRepository) FindAll(tenantID string) ([]models.SalesOrder, error) {
+func (r *SalesOrderRepository) FindAll(tenantID string, isRestricted bool, userID string) ([]models.SalesOrder, error) {
 	var orders []models.SalesOrder
-	err := r.db.Preload("Customer").
-		Where("tenant_id = ? AND is_active = ?", tenantID, true).
-		Order("created_on desc").
-		Find(&orders).Error
+	query := r.db.Preload("Customer").Where("tenant_id = ? AND is_active = ?", tenantID, true)
+	if isRestricted {
+		query = query.Where("created_by = ?", userID)
+	}
+	err := query.Order("created_on desc").Find(&orders).Error
 	return orders, err
 }
 
-func (r *SalesOrderRepository) FindByID(id string, tenantID string) (*models.SalesOrder, error) {
+func (r *SalesOrderRepository) FindByID(id string, tenantID string, isRestricted bool, userID string) (*models.SalesOrder, error) {
 	var order models.SalesOrder
-	err := r.db.Preload("Customer").
-		Preload("Items").
-		Preload("Items.Product").
-		Where("id = ? AND tenant_id = ? AND is_active = ?", id, tenantID, true).
-		First(&order).Error
+	query := r.db.Preload("Customer").Preload("Items").Preload("Items.Product").Where("id = ? AND tenant_id = ? AND is_active = ?", id, tenantID, true)
+	if isRestricted {
+		query = query.Where("created_by = ?", userID)
+	}
+	err := query.First(&order).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("sales order not found")
@@ -54,8 +55,10 @@ func (r *SalesOrderRepository) Update(order *models.SalesOrder) error {
 	})
 }
 
-func (r *SalesOrderRepository) UpdateStatus(id string, tenantID string, status string) error {
-	return r.db.Model(&models.SalesOrder{}).
-		Where("id = ? AND tenant_id = ?", id, tenantID).
-		Update("status", status).Error
+func (r *SalesOrderRepository) UpdateStatus(id string, tenantID string, status string, isRestricted bool, userID string) error {
+	query := r.db.Model(&models.SalesOrder{}).Where("id = ? AND tenant_id = ?", id, tenantID)
+	if isRestricted {
+		query = query.Where("created_by = ?", userID)
+	}
+	return query.Update("status", status).Error
 }

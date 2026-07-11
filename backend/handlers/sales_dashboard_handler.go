@@ -26,6 +26,11 @@ func (h *SalesDashboardHandler) GetSalesDashboardData(c *fiber.Ctx) error {
 		}
 	}
 
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
+
 	timeframe := c.Query("timeframe", "YTD")
 	customerID := c.Query("customer_id")
 	productID := c.Query("product_id")
@@ -51,7 +56,7 @@ func (h *SalesDashboardHandler) GetSalesDashboardData(c *fiber.Ctx) error {
 		filter.SalesRepID = &salesRepID
 	}
 
-	data, err := h.service.GetSalesDashboardData(tenantID, filter)
+	data, err := h.service.GetSalesDashboardData(tenantID, filter, isRestricted)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}

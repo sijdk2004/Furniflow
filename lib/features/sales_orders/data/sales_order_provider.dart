@@ -39,6 +39,8 @@ class SalesOrderNotifier extends AsyncNotifier<List<SalesOrder>> {
 
   Future<void> updateSalesOrder(
     String id, {
+    String? orderNumber,
+    String? salesPerson,
     DateTime? expectedDeliveryDate,
     String? remarks,
     double discount = 0,
@@ -47,6 +49,8 @@ class SalesOrderNotifier extends AsyncNotifier<List<SalesOrder>> {
     await _apiClient.put(
       '/v1/system/sales-orders/$id',
       data: {
+        'order_number': orderNumber,
+        'sales_person': salesPerson,
         'expected_delivery_date': expectedDeliveryDate?.toIso8601String(),
         'remarks': remarks,
         'discount': discount,

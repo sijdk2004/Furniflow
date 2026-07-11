@@ -68,7 +68,7 @@ class MenuNotifier extends Notifier<List<MenuItem>> {
     List<MenuItem> filteredMenus = [];
 
     // Fallback for POC modules not yet in DB
-    if (permissions.contains('DSH.DSH_HOME.VIEW')) {
+    if (permissions.contains('DSH.SALES_DSH.VIEW')) {
       filteredMenus.add(MenuItem(title: 'Sales Dashboard', route: '/sales-dashboard', icon: 'barChart', group: MenuItem._determineGroup('/sales-dashboard')));
     }
     if (permissions.contains('SYS.MASTER_DATA.VIEW')) {

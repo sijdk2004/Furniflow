@@ -258,13 +258,18 @@ class _AppShellState extends ConsumerState<AppShell> {
   IconData _getIcon(String iconName) {
     switch (iconName) {
       case 'dashboard': return LucideIcons.layoutDashboard;
+      case 'layoutDashboard': return LucideIcons.layoutDashboard;
       case 'barChart': return LucideIcons.barChart2;
       case 'business': return LucideIcons.building2;
       case 'settings': return LucideIcons.settings;
       case 'users': return LucideIcons.users;
+      case 'shield': return LucideIcons.shield;
       case 'box': return LucideIcons.box;
       case 'truck': return LucideIcons.truck;
       case 'factory': return LucideIcons.factory;
+      case 'activity': return LucideIcons.activity;
+      case 'fileText': return LucideIcons.fileText;
+      case 'shoppingCart': return LucideIcons.shoppingCart;
       default: return LucideIcons.circle;
     }
   }
@@ -288,7 +293,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     // We use exact match first; fall back to prefix only when path is NOT a prefix of another menu item
     // that is itself selected. This prevents /tracking matching when /tracking/board is active.
     final isSelected = currentPath == path ||
-        (path != '/' && currentPath.startsWith(path) && !currentPath.startsWith('$path/'));
+        (path != '/' && currentPath.startsWith('$path/'));
     final theme = Theme.of(context);
 
     return Padding(

@@ -16,7 +16,7 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 func (r *UserRepository) FindByUsernameAndTenant(username string, tenantID string) (*models.User, error) {
 	var user models.User
 	err := r.db.Preload("Roles.Permissions").
-		Where("username = ? AND tenant_id = ? AND is_active = ?", username, tenantID, true).
+		Where("(username = ? OR email = ?) AND tenant_id = ? AND is_active = ?", username, username, tenantID, true).
 		First(&user).Error
 	if err != nil {
 		return nil, err

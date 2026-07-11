@@ -19,7 +19,7 @@ func NewSalesDashboardRepository(db *gorm.DB) *SalesDashboardRepository {
 	return &SalesDashboardRepository{db: db}
 }
 
-func (r *SalesDashboardRepository) GetSalesDashboardData(tenantID string, filter *models.SalesDashboardFilterRequest) (*models.SalesDashboardResponse, error) {
+func (r *SalesDashboardRepository) GetSalesDashboardData(tenantID string, filter *models.SalesDashboardFilterRequest, isRestricted bool) (*models.SalesDashboardResponse, error) {
 	resp := &models.SalesDashboardResponse{}
 
 	var startDate, prevStartDate, prevEndDate time.Time
@@ -57,6 +57,9 @@ func (r *SalesDashboardRepository) GetSalesDashboardData(tenantID string, filter
 		q = q.Where(table+".tenant_id = ?", tenantID)
 		if filter.OrganizationID != nil && *filter.OrganizationID != "" {
 			q = q.Where(table+".organization_id = ?", *filter.OrganizationID)
+		}
+		if isRestricted {
+			q = q.Where(table+".created_by = ?", filter.UserID)
 		}
 		return q
 	}

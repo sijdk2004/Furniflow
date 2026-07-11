@@ -11,6 +11,7 @@ class ProductionTrackingModel {
   final String? assignedTeam;
   final String? assignedEmployeeId;
   final int completionPercentage;
+  final bool isOnHold;
   final DateTime? stageStartDate;
   final DateTime? stageEndDate;
   final List<ProductionStageHistoryModel> histories;
@@ -22,6 +23,7 @@ class ProductionTrackingModel {
     this.assignedTeam,
     this.assignedEmployeeId,
     required this.completionPercentage,
+    required this.isOnHold,
     this.stageStartDate,
     this.stageEndDate,
     this.histories = const [],
@@ -35,6 +37,7 @@ class ProductionTrackingModel {
       assignedTeam: json['assigned_team'],
       assignedEmployeeId: json['assigned_employee_id'],
       completionPercentage: json['completion_percentage'] ?? 0,
+      isOnHold: json['is_on_hold'] ?? false,
       stageStartDate: json['stage_start_date'] != null ? DateTime.parse(json['stage_start_date']) : null,
       stageEndDate: json['stage_end_date'] != null ? DateTime.parse(json['stage_end_date']) : null,
       histories: (json['histories'] as List?)?.map((e) => ProductionStageHistoryModel.fromJson(e)).toList() ?? [],
@@ -89,6 +92,7 @@ class ProductionBoardItem {
   final String status;
   final DateTime? plannedEndDate;
   final int completionPercentage;
+  final bool isOnHold;
   final String? assignedTeam;
 
   ProductionBoardItem({
@@ -103,6 +107,7 @@ class ProductionBoardItem {
     required this.status,
     this.plannedEndDate,
     required this.completionPercentage,
+    required this.isOnHold,
     this.assignedTeam,
   });
 
@@ -119,6 +124,7 @@ class ProductionBoardItem {
       status: json['status'],
       plannedEndDate: json['planned_end_date'] != null ? DateTime.parse(json['planned_end_date']) : null,
       completionPercentage: json['completion_percentage'] ?? 0,
+      isOnHold: json['is_on_hold'] ?? false,
       assignedTeam: json['assigned_team'],
     );
   }
@@ -158,6 +164,13 @@ class ProductionTrackingRepository {
       'delay_reason': delayReason,
     });
   }
+
+  Future<void> toggleHold(String id, bool isOnHold, {String? reason}) async {
+    await _apiClient.put('/v1/system/manufacturing/production-tracking/$id/hold', data: {
+      'is_on_hold': isOnHold,
+      'reason': reason ?? '',
+    });
+  }
 }
 
 final productionTrackingRepositoryProvider = Provider<ProductionTrackingRepository>((ref) {
@@ -173,4 +186,27 @@ final productionBoardProvider = FutureProvider.autoDispose<List<ProductionBoardI
 final productionTrackingDetailProvider = FutureProvider.family.autoDispose<ProductionTrackingModel, String>((ref, id) async {
   final repo = ref.watch(productionTrackingRepositoryProvider);
   return repo.getTrackingById(id);
+});
+
+final productionStagesProvider = FutureProvider.autoDispose<List<String>>((ref) async {
+  final apiClient = ref.watch(apiClientProvider);
+  final response = await apiClient.get('/v1/system/masters/production_stages');
+  final data = response.data['data'] as List?;
+  if (data == null || data.isEmpty) {
+    return [
+      "Raw Material Ready",
+      "Cutting",
+      "Carpentry",
+      "Assembly",
+      "Sanding",
+      "Sealer",
+      "Painting",
+      "Polishing",
+      "Drying",
+      "Quality Inspection",
+      "Packing",
+      "Ready For Delivery",
+    ];
+  }
+  return data.map((x) => x['name'] as String).toList();
 });

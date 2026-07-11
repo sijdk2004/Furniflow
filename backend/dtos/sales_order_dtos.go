@@ -5,6 +5,8 @@ import (
 )
 
 type SalesOrderUpdateRequest struct {
+	OrderNumber          *string                  `json:"order_number"`
+	SalesPerson          *string                  `json:"sales_person"`
 	ExpectedDeliveryDate *time.Time               `json:"expected_delivery_date"`
 	Remarks              *string                  `json:"remarks"`
 	Discount             float64                  `json:"discount"`

@@ -88,13 +88,24 @@ func CheckPermission(requiredPermission string) fiber.Handler {
 		}
 
 		hasPermission := false
+		isRestrictedSales := false
+		hasSalesRole := false
+		hasAdminRole := false
+
 		fmt.Printf("User %s checking req: %s. Roles count: %d\n", userID, requiredPermission, len(user.Roles))
 		for _, role := range user.Roles {
+			if role.RoleCode == "SALES_PERSON" {
+				hasSalesRole = true
+			}
+			if role.RoleCode == "SYS_ADMIN" || role.RoleCode == "PLATFORM_ADMIN" || role.RoleCode == "ADMIN" || role.RoleCode == "SALES_MANAGER" {
+				hasAdminRole = true
+			}
+
 			fmt.Printf("Role %s has %d perms\n", role.RoleCode, len(role.Permissions))
 			for _, p := range role.Permissions {
 				if p.PermissionCode == requiredPermission {
 					hasPermission = true
-					break
+					// Not breaking early because we need to check all roles for admin status
 				}
 			}
 		}
@@ -102,6 +113,63 @@ func CheckPermission(requiredPermission string) fiber.Handler {
 		if !hasPermission {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Forbidden: missing " + requiredPermission})
 		}
+
+		if hasSalesRole && !hasAdminRole {
+			isRestrictedSales = true
+		}
+		c.Locals("is_restricted_sales", isRestrictedSales)
+
+		return c.Next()
+	}
+}
+
+// CheckAnyPermission checks if the user has AT LEAST ONE of the required permissions
+func CheckAnyPermission(requiredPermissions ...string) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		tenantID := c.Locals("tenant_id").(string)
+		userID := c.Locals("user_id").(string)
+
+		db, err := dbPkg.InitDB()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database connection failed"})
+		}
+
+		var user models.User
+		if err := db.Preload("Roles.Permissions").Where("id = ? AND tenant_id = ?", userID, tenantID).First(&user).Error; err != nil {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Access denied"})
+		}
+
+		hasPermission := false
+		isRestrictedSales := false
+		hasSalesRole := false
+		hasAdminRole := false
+
+		for _, role := range user.Roles {
+			if role.RoleCode == "SALES_PERSON" {
+				hasSalesRole = true
+			}
+			if role.RoleCode == "SYS_ADMIN" || role.RoleCode == "PLATFORM_ADMIN" || role.RoleCode == "ADMIN" || role.RoleCode == "SALES_MANAGER" {
+				hasAdminRole = true
+			}
+
+			for _, p := range role.Permissions {
+				for _, req := range requiredPermissions {
+					if p.PermissionCode == req {
+						hasPermission = true
+						break
+					}
+				}
+			}
+		}
+
+		if !hasPermission {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Forbidden: missing required permissions"})
+		}
+
+		if hasSalesRole && !hasAdminRole {
+			isRestrictedSales = true
+		}
+		c.Locals("is_restricted_sales", isRestrictedSales)
 
 		return c.Next()
 	}

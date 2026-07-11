@@ -98,7 +98,7 @@ func main() {
 	salesOrderService := services.NewSalesOrderService(salesOrderRepo)
 	bomService := services.NewBOMService(bomRepo, productRepo)
 	productionOrderService := services.NewProductionOrderService(productionOrderRepo, bomRepo)
-	productionTrackingService := services.NewProductionTrackingService(productionTrackingRepo, productionOrderService)
+	productionTrackingService := services.NewProductionTrackingService(productionTrackingRepo, productionOrderService, masterRepo)
 	deliveryService := services.NewDeliveryService(deliveryRepo)
 	dashboardService := services.NewDashboardService(dashboardRepo)
 	salesDashboardService := services.NewSalesDashboardService(salesDashboardRepo)
@@ -151,8 +151,8 @@ func main() {
 	protected := api.Group("/system", middleware.JWTProtected(string(services.JWTSecret)))
 	
 	protected.Get("/dashboard/data", middleware.CheckPermission("DSH.DSH_HOME.VIEW"), dashboardHandler.GetDashboardData)
-	protected.Get("/sales-dashboard/data", middleware.CheckPermission("DSH.DSH_HOME.VIEW"), salesDashboardHandler.GetSalesDashboardData)
-	protected.Get("/sales_dashboard/data", middleware.CheckPermission("DSH.DSH_HOME.VIEW"), salesDashboardHandler.GetSalesDashboardData)
+	protected.Get("/sales-dashboard/data", middleware.CheckPermission("DSH.SALES_DSH.VIEW"), salesDashboardHandler.GetSalesDashboardData)
+	protected.Get("/sales_dashboard/data", middleware.CheckPermission("DSH.SALES_DSH.VIEW"), salesDashboardHandler.GetSalesDashboardData)
 	protected.Get("/manufacturing-dashboard/data", middleware.CheckPermission("MFG.DSH.VIEW"), mfgDashboardHandler.GetManufacturingDashboardData)
 	protected.Get("/delivery-dashboard/data", middleware.CheckPermission("DLV.DLV_LIST.VIEW"), deliveryDashboardHandler.GetDeliveryDashboardData)
 
@@ -183,6 +183,16 @@ func main() {
 
 	// Master Data Generic CRUD
 	masters := protected.Group("/masters")
+	// Specific Master Data for Production Stages (Allow TRK permissions)
+	masters.Get("/production_stages", middleware.CheckAnyPermission("SYS.MASTER_DATA.VIEW", "MFG.TRK.VIEW", "MFG.TRK.VIEW_BOARD"), func(c *fiber.Ctx) error {
+		tenantID := c.Locals("tenant_id").(string)
+		records, err := masterService.GetAll("production_stages", tenantID)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"success": false, "error": err.Error()})
+		}
+		return c.JSON(fiber.Map{"success": true, "data": records})
+	})
+
 	masters.Get("/:type", middleware.CheckPermission("SYS.MASTER_DATA.VIEW"), masterDataHandler.GetMasterData)
 	masters.Post("/:type", middleware.CheckPermission("SYS.MASTER_DATA.CREATE"), masterDataHandler.CreateMasterData)
 	masters.Put("/:type/:id", middleware.CheckPermission("SYS.MASTER_DATA.UPDATE"), masterDataHandler.UpdateMasterData)
@@ -230,7 +240,7 @@ func main() {
 	boms.Post("/:id/revise", middleware.CheckPermission("MFG.BOM.CREATE"), bomHandler.ReviseBOM)
 
 	prodOrders := manufacturing.Group("/production-orders")
-	prodOrders.Get("/", middleware.CheckPermission("MFG.PRD.VIEW"), productionOrderHandler.GetProductionOrders)
+	prodOrders.Get("/", middleware.CheckAnyPermission("MFG.PRD.VIEW", "DLV.DLV_LIST.CREATE"), productionOrderHandler.GetProductionOrders)
 	prodOrders.Post("/", middleware.CheckPermission("MFG.PRD.CREATE"), productionOrderHandler.CreateProductionOrder)
 	prodOrders.Get("/:id", middleware.CheckPermission("MFG.PRD.VIEW"), productionOrderHandler.GetProductionOrderByID)
 	prodOrders.Patch("/:id/status", middleware.CheckPermission("MFG.PRD.UPDATE"), productionOrderHandler.UpdateStatus)
@@ -241,6 +251,7 @@ func main() {
 	prodTracking.Get("/:id", middleware.CheckPermission("MFG.TRK.VIEW"), productionTrackingHandler.GetTrackingByID)
 	prodTracking.Put("/:id/start", middleware.CheckPermission("MFG.TRK.UPDATE"), productionTrackingHandler.StartStage)
 	prodTracking.Put("/:id/stage", middleware.CheckPermission("MFG.TRK.UPDATE"), productionTrackingHandler.UpdateStage)
+	prodTracking.Put("/:id/hold", middleware.CheckPermission("MFG.TRK.UPDATE"), productionTrackingHandler.ToggleHold)
 
 	// Delivery CRUD
 	delivery := protected.Group("/delivery")

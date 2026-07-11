@@ -4,6 +4,7 @@ import (
 	"furniflow-backend/models"
 	"furniflow-backend/repositories"
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersHandler struct{
@@ -31,6 +32,14 @@ func (h *UsersHandler) CreateUser(c *fiber.Ctx) error {
 	}
 	user.TenantID = tenantID
 	
+	if user.Password != "" {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to hash password"})
+		}
+		user.PasswordHash = string(hashed)
+	}
+
 	if err := h.repo.Create(&user); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -53,6 +62,14 @@ func (h *UsersHandler) UpdateUser(c *fiber.Ctx) error {
 
 	if err := c.BodyParser(user); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	if user.Password != "" {
+		hashed, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to hash password"})
+		}
+		user.PasswordHash = string(hashed)
 	}
 
 	if err := h.repo.Update(user); err != nil {

@@ -3,6 +3,8 @@ import 'package:dio/dio.dart';
 import '../../../core/network/providers/network_providers.dart';
 import '../domain/auth_models.dart';
 
+import '../../../core/config/env_config.dart';
+
 abstract class AuthRepository {
   Future<AuthResponseModel> login(String username, String password, String tenantId);
 }
@@ -15,7 +17,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<AuthResponseModel> login(String username, String password, String tenantId) async {
     final response = await _dio.post(
-      'http://127.0.0.1:5182/v1/auth/login',
+      '${EnvConfig.baseUrl}/v1/auth/login',
       data: {
         'username': username,
         'password': password,

@@ -97,3 +97,29 @@ func (h *ProductionTrackingHandler) StartStage(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Stage started"})
 }
+
+func (h *ProductionTrackingHandler) ToggleHold(c *fiber.Ctx) error {
+	tenantID := c.Locals("tenant_id").(string)
+	userIDStr, ok := c.Locals("user_id").(string)
+	id := c.Params("id")
+
+	var userID *uuid.UUID
+	if ok && userIDStr != "" {
+		uid, err := uuid.Parse(userIDStr)
+		if err == nil {
+			userID = &uid
+		}
+	}
+
+	var req models.ToggleHoldRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	err := h.service.ToggleHold(id, &req, tenantID, userID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Hold status updated successfully"})
+}

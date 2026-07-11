@@ -209,9 +209,13 @@ class _SalesOrderViewScreenState extends ConsumerState<SalesOrderViewScreen> {
                               
                               Text('Order Details', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 16),
+                              if (order.orderNumber != null && order.orderNumber!.isNotEmpty)
+                                _buildInfoRow('Order No:', order.orderNumber!),
                               _buildInfoRow('Order Date:', FormatHelper.formatDate(order.orderDate)),
                               if (order.quotationId != null)
                                 _buildInfoRow('Quotation Ref:', order.quotationId!),
+                              if (order.salesPerson != null && order.salesPerson!.isNotEmpty)
+                                _buildInfoRow('Sales Person:', order.salesPerson!),
                               _buildInfoRow('Expected Delivery:', order.expectedDeliveryDate != null ? FormatHelper.formatDate(order.expectedDeliveryDate!) : 'Not Set'),
                               if (order.remarks != null && order.remarks!.isNotEmpty)
                                 _buildInfoRow('Remarks:', order.remarks!),

@@ -7,6 +7,9 @@ import 'package:intl/intl.dart';
 import '../../../core/utils/format_helper.dart';
 import '../data/sales_order_provider.dart';
 import '../../../core/utils/shared_dialogs.dart';
+import '../../usr/data/users_provider.dart';
+import '../../usr/domain/user_model.dart';
+import '../../../core/presentation/widgets/searchable_dropdown.dart';
 
 class SalesOrderEditScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -20,6 +23,8 @@ class SalesOrderEditScreen extends ConsumerStatefulWidget {
 class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
   final _formKey = GlobalKey<FormState>();
   final _remarksController = TextEditingController();
+  final _orderNumberController = TextEditingController();
+  String? _selectedSalesPerson;
   DateTime? _expectedDeliveryDate;
   bool _isLoading = false;
 
@@ -33,6 +38,8 @@ class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
     final order = await ref.read(salesOrderProvider.notifier).getSalesOrderById(widget.orderId);
     setState(() {
       _remarksController.text = order.remarks ?? '';
+      _orderNumberController.text = order.orderNumber ?? '';
+      _selectedSalesPerson = order.salesPerson;
       _expectedDeliveryDate = order.expectedDeliveryDate;
     });
   }
@@ -40,6 +47,7 @@ class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
   @override
   void dispose() {
     _remarksController.dispose();
+    _orderNumberController.dispose();
     super.dispose();
   }
 
@@ -52,6 +60,8 @@ class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
       
       await ref.read(salesOrderProvider.notifier).updateSalesOrder(
         widget.orderId,
+        orderNumber: _orderNumberController.text.isEmpty ? null : _orderNumberController.text,
+        salesPerson: _selectedSalesPerson,
         expectedDeliveryDate: _expectedDeliveryDate,
         remarks: _remarksController.text,
         discount: order.discount,
@@ -108,6 +118,43 @@ class _SalesOrderEditScreenState extends ConsumerState<SalesOrderEditScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Logistics Details', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _orderNumberController,
+                              decoration: const InputDecoration(
+                                labelText: 'Order Number (Optional)',
+                                border: OutlineInputBorder(),
+                                hintText: 'e.g., 123/1302/11/1/24',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            child: ref.watch(usersProvider).when(
+                              data: (users) => SearchableDropdown<UserModel>(
+                                label: 'Sales Person',
+                                items: users,
+                                itemAsString: (u) => '${u.firstName} ${u.lastName ?? ''}'.trim(),
+                                selectedItem: users.where((u) => '${u.firstName} ${u.lastName ?? ''}'.trim() == _selectedSalesPerson).firstOrNull,
+                                onChanged: (val) {
+                                  setState(() => _selectedSalesPerson = val != null ? '${val.firstName} ${val.lastName ?? ''}'.trim() : null);
+                                },
+                              ),
+                              loading: () => TextFormField(
+                                enabled: false,
+                                decoration: const InputDecoration(labelText: 'Sales Person', border: OutlineInputBorder(), hintText: 'Loading...'),
+                              ),
+                              error: (e, s) => TextFormField(
+                                enabled: false,
+                                decoration: const InputDecoration(labelText: 'Sales Person', border: OutlineInputBorder(), errorText: 'Failed to load'),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 24),
                       Row(
                         children: [

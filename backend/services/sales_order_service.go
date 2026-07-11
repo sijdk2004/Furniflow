@@ -17,16 +17,16 @@ func NewSalesOrderService(repo *repositories.SalesOrderRepository) *SalesOrderSe
 	return &SalesOrderService{repo: repo}
 }
 
-func (s *SalesOrderService) GetAll(tenantID string) ([]models.SalesOrder, error) {
-	return s.repo.FindAll(tenantID)
+func (s *SalesOrderService) GetAll(tenantID string, isRestricted bool, userID string) ([]models.SalesOrder, error) {
+	return s.repo.FindAll(tenantID, isRestricted, userID)
 }
 
-func (s *SalesOrderService) GetByID(id, tenantID string) (*models.SalesOrder, error) {
-	return s.repo.FindByID(id, tenantID)
+func (s *SalesOrderService) GetByID(id, tenantID string, isRestricted bool, userID string) (*models.SalesOrder, error) {
+	return s.repo.FindByID(id, tenantID, isRestricted, userID)
 }
 
-func (s *SalesOrderService) Update(id, tenantID, userID string, req dtos.SalesOrderUpdateRequest) (*models.SalesOrder, error) {
-	existing, err := s.repo.FindByID(id, tenantID)
+func (s *SalesOrderService) Update(id, tenantID, userID string, req dtos.SalesOrderUpdateRequest, isRestricted bool) (*models.SalesOrder, error) {
+	existing, err := s.repo.FindByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +60,12 @@ func (s *SalesOrderService) Update(id, tenantID, userID string, req dtos.SalesOr
 	existing.TotalAmount = existing.Subtotal - existing.Discount + existing.Tax
 
 	// Update administrative fields
+	if req.OrderNumber != nil {
+		existing.OrderNumber = *req.OrderNumber
+	}
+	if req.SalesPerson != nil {
+		existing.SalesPerson = *req.SalesPerson
+	}
 	existing.ExpectedDeliveryDate = req.ExpectedDeliveryDate
 	existing.Remarks = req.Remarks
 	existing.UpdatedBy = userID
@@ -68,11 +74,11 @@ func (s *SalesOrderService) Update(id, tenantID, userID string, req dtos.SalesOr
 		return nil, err
 	}
 
-	return s.GetByID(id, tenantID) // reload with relations
+	return s.GetByID(id, tenantID, isRestricted, userID) // reload with relations
 }
 
-func (s *SalesOrderService) UpdateStatus(id, tenantID, userID, newStatus string) error {
-	existing, err := s.repo.FindByID(id, tenantID)
+func (s *SalesOrderService) UpdateStatus(id, tenantID, userID, newStatus string, isRestricted bool) error {
+	existing, err := s.repo.FindByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return err
 	}
@@ -104,5 +110,5 @@ func (s *SalesOrderService) UpdateStatus(id, tenantID, userID, newStatus string)
 		return fmt.Errorf("invalid transition from %s to %s", existing.Status, newStatus)
 	}
 
-	return s.repo.UpdateStatus(id, tenantID, newStatus)
+	return s.repo.UpdateStatus(id, tenantID, newStatus, isRestricted, userID)
 }

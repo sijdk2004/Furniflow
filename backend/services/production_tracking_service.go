@@ -22,24 +22,60 @@ var ProductionStages = []string{
 	"Quality Inspection",
 	"Packing",
 	"Ready For Delivery",
-	"On Hold",
-	"Resumed",
+}
+
+func (s *ProductionTrackingService) getStages(tenantID string) []string {
+	records, err := s.masterRepo.FindAll("production_stages", tenantID)
+	if err != nil || len(records) == 0 {
+		return ProductionStages // Fallback to hardcoded if none in DB
+	}
+	var stages []string
+	for _, r := range records {
+		stages = append(stages, r.Name)
+	}
+	return stages
 }
 
 type ProductionTrackingService struct {
 	repo    *repositories.ProductionTrackingRepository
 	poService *ProductionOrderService
+	masterRepo *repositories.MasterDataRepository
 }
 
-func NewProductionTrackingService(repo *repositories.ProductionTrackingRepository, poService *ProductionOrderService) *ProductionTrackingService {
+func NewProductionTrackingService(repo *repositories.ProductionTrackingRepository, poService *ProductionOrderService, masterRepo *repositories.MasterDataRepository) *ProductionTrackingService {
 	return &ProductionTrackingService{
 		repo:    repo,
 		poService: poService,
+		masterRepo: masterRepo,
 	}
 }
 
 func (s *ProductionTrackingService) GetBoardItems(tenantID string) ([]models.ProductionBoardItem, error) {
-	return s.repo.GetBoardItems(tenantID)
+	items, err := s.repo.GetBoardItems(tenantID)
+	if err != nil {
+		return nil, err
+	}
+
+	stages := s.getStages(tenantID)
+
+	// Dynamically recalculate completion percentage in case of data inconsistencies
+	for i := range items {
+		idx := s.getStageIndex(items[i].CurrentStage, tenantID)
+		if idx != -1 {
+			percentage := 0
+			if len(stages) > 1 {
+				percentage = int((float64(idx) / float64(len(stages)-1)) * 100)
+			} else {
+				percentage = 100
+			}
+			if percentage > 100 {
+				percentage = 100
+			}
+			items[i].CompletionPercentage = percentage
+		}
+	}
+
+	return items, nil
 }
 
 func (s *ProductionTrackingService) GetTrackingByID(id string, tenantID string) (*models.ProductionTracking, error) {
@@ -68,9 +104,11 @@ func (s *ProductionTrackingService) EnsureTrackingExists(orderID string, tenantI
 		return nil, errors.New("cannot track draft or cancelled orders")
 	}
 
+	stages := s.getStages(tenantID)
+
 	newTracking := &models.ProductionTracking{
 		ProductionOrderID: poID,
-		CurrentStage:      ProductionStages[0], // Raw Material Ready
+		CurrentStage:      stages[0], // Dynamically fetch first stage
 		BaseModel: models.BaseModel{
 			TenantID: tenantID,
 		},
@@ -105,8 +143,9 @@ func (s *ProductionTrackingService) EnsureTrackingExists(orderID string, tenantI
 	return s.GetTrackingByID(newTracking.ID.String(), tenantID)
 }
 
-func (s *ProductionTrackingService) getStageIndex(stage string) int {
-	for i, s := range ProductionStages {
+func (s *ProductionTrackingService) getStageIndex(stage string, tenantID string) int {
+	stages := s.getStages(tenantID)
+	for i, s := range stages {
 		if s == stage {
 			return i
 		}
@@ -120,8 +159,8 @@ func (s *ProductionTrackingService) UpdateStage(trackingID string, req *models.U
 		return errors.New("tracking record not found")
 	}
 
-	currentIndex := s.getStageIndex(tracking.CurrentStage)
-	nextIndex := s.getStageIndex(req.NextStage)
+	currentIndex := s.getStageIndex(tracking.CurrentStage, tenantID)
+	nextIndex := s.getStageIndex(req.NextStage, tenantID)
 
 	if nextIndex == -1 {
 		return errors.New("invalid next stage")
@@ -130,10 +169,7 @@ func (s *ProductionTrackingService) UpdateStage(trackingID string, req *models.U
 	// Business Rule: Stage transitions must be sequential (but allow jumping back if rework is needed)
 	// We will strictly enforce sequential forward, but allow going back.
 	if nextIndex > currentIndex+1 {
-		// Exception for "On Hold" and "Resumed"
-		if req.NextStage != "On Hold" && req.NextStage != "Resumed" && tracking.CurrentStage != "Resumed" {
-			return errors.New("stage transitions must be strictly sequential forward")
-		}
+		return errors.New("stage transitions must be strictly sequential forward")
 	}
 
 	// Complete the current stage history
@@ -161,10 +197,18 @@ func (s *ProductionTrackingService) UpdateStage(trackingID string, req *models.U
 		tracking.UpdatedBy = userID
 	}
 	
-	// Auto calculate completion percentage, ignore for On Hold/Resumed
-	if req.NextStage != "On Hold" && req.NextStage != "Resumed" {
-		tracking.CompletionPercentage = int((float64(nextIndex) / float64(len(ProductionStages)-3)) * 100)
+	// Auto calculate completion percentage
+	stages := s.getStages(tenantID)
+	percentage := 0
+	if len(stages) > 1 {
+		percentage = int((float64(nextIndex) / float64(len(stages)-1)) * 100)
+	} else {
+		percentage = 100
 	}
+	if percentage > 100 {
+		percentage = 100
+	}
+	tracking.CompletionPercentage = percentage
 
 	if err := s.repo.UpdateTracking(tracking); err != nil {
 		return err
@@ -189,17 +233,62 @@ func (s *ProductionTrackingService) UpdateStage(trackingID string, req *models.U
 	s.repo.CreateHistory(newHistory)
 
 	// Business Rule: Automatically update PO status
-	if tracking.CurrentStage == "Ready For Delivery" {
+	if nextIndex == len(stages)-1 {
 		s.poService.UpdateStatus(tracking.ProductionOrderID.String(), tenantID, "Completed")
-	} else if tracking.CurrentStage == "On Hold" {
-		s.poService.UpdateStatus(tracking.ProductionOrderID.String(), tenantID, "On Hold")
-	} else if tracking.CurrentStage == "Quality Inspection" {
-		// Just keeping it In Progress
-		s.poService.UpdateStatus(tracking.ProductionOrderID.String(), tenantID, "In Progress")
 	} else {
-		// Ensure it's marked In Progress
 		s.poService.UpdateStatus(tracking.ProductionOrderID.String(), tenantID, "In Progress")
 	}
+
+	return nil
+}
+
+func (s *ProductionTrackingService) ToggleHold(trackingID string, req *models.ToggleHoldRequest, tenantID string, userID *uuid.UUID) error {
+	tracking, err := s.repo.GetTrackingByID(trackingID, tenantID)
+	if err != nil {
+		return errors.New("tracking record not found")
+	}
+
+	tracking.IsOnHold = req.IsOnHold
+	if userID != nil {
+		tracking.UpdatedBy = userID
+	}
+
+	if err := s.repo.UpdateTracking(tracking); err != nil {
+		return err
+	}
+
+	if tracking.IsOnHold {
+		s.poService.UpdateStatus(tracking.ProductionOrderID.String(), tenantID, "On Hold")
+	} else {
+		s.poService.UpdateStatus(tracking.ProductionOrderID.String(), tenantID, "In Progress")
+	}
+
+	now := time.Now()
+	remarks := req.Reason
+	action := "Paused (On Hold)"
+	if !req.IsOnHold {
+		action = "Resumed"
+	}
+	if remarks == "" {
+		remarks = action
+	} else {
+		remarks = action + " - " + remarks
+	}
+
+	history := &models.ProductionStageHistory{
+		TrackingID:     tracking.ID,
+		Stage:          tracking.CurrentStage,
+		StageEnteredAt: now,
+		BaseModel: models.BaseModel{
+			TenantID: tenantID,
+			Remarks:  &remarks,
+		},
+	}
+	if userID != nil {
+		history.CreatedBy = userID
+		history.UpdatedBy = userID
+	}
+	s.repo.CreateHistory(history)
 
 	return nil
 }

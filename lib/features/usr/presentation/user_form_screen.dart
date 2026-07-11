@@ -20,6 +20,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _departmentController = TextEditingController();
+  final _designationController = TextEditingController();
 
   bool _isActive = true;
   bool _isLoading = false;
@@ -40,6 +42,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
       _emailController.text = user.email;
       _firstNameController.text = user.firstName;
       _lastNameController.text = user.lastName ?? '';
+      _departmentController.text = user.department ?? '';
+      _designationController.text = user.designation ?? '';
       _isActive = user.isActive;
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error loading user: $e')));
@@ -55,6 +59,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _passwordController.dispose();
+    _departmentController.dispose();
+    _designationController.dispose();
     super.dispose();
   }
 
@@ -69,6 +75,8 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
         'email': _emailController.text,
         'first_name': _firstNameController.text,
         'last_name': _lastNameController.text,
+        'department': _departmentController.text.isEmpty ? null : _departmentController.text,
+        'designation': _designationController.text.isEmpty ? null : _designationController.text,
         'is_active': _isActive,
       };
 
@@ -162,6 +170,24 @@ class _UserFormScreenState extends ConsumerState<UserFormScreen> {
                                   if (!val.contains('@')) return 'Invalid email';
                                   return null;
                                 },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextFormField(
+                                controller: _departmentController,
+                                decoration: const InputDecoration(labelText: 'Department (e.g. Sales)'),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextFormField(
+                                controller: _designationController,
+                                decoration: const InputDecoration(labelText: 'Designation (e.g. Sales Person)'),
                               ),
                             ),
                           ],

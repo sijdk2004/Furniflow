@@ -14,6 +14,7 @@ type ProductionTracking struct {
 	AssignedTeam         *string     `gorm:"type:varchar(100)" json:"assigned_team"`
 	AssignedEmployeeID   *uuid.UUID  `gorm:"type:uuid" json:"assigned_employee_id"`
 	CompletionPercentage int         `gorm:"type:integer;default:0" json:"completion_percentage"`
+	IsOnHold             bool        `gorm:"type:boolean;default:false" json:"is_on_hold"`
 	StageStartDate       *time.Time  `gorm:"type:timestamp" json:"stage_start_date"`
 	StageEndDate         *time.Time  `gorm:"type:timestamp" json:"stage_end_date"`
 
@@ -49,6 +50,11 @@ type UpdateTrackingStageRequest struct {
 	DelayReason        *string     `json:"delay_reason"`
 }
 
+type ToggleHoldRequest struct {
+	IsOnHold bool   `json:"is_on_hold"`
+	Reason   string `json:"reason"`
+}
+
 type CompleteStageRequest struct {
 	Remarks     *string `json:"remarks"`
 	DelayReason *string `json:"delay_reason"`
@@ -71,5 +77,6 @@ type ProductionBoardItem struct {
 	Status               string    `json:"status"`
 	PlannedEndDate       *time.Time`json:"planned_end_date"`
 	CompletionPercentage int       `json:"completion_percentage"`
+	IsOnHold             bool      `json:"is_on_hold"`
 	AssignedTeam         *string   `json:"assigned_team"`
 }

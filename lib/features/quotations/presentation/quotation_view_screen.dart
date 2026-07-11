@@ -54,7 +54,11 @@ class QuotationViewScreen extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        if (q.quotationNumber != null && q.quotationNumber!.isNotEmpty)
+                          Text('Quotation No: ${q.quotationNumber}', style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey[700])),
                         Text('Customer: $cusName', style: theme.textTheme.titleLarge),
+                        if (q.salesPerson != null && q.salesPerson!.isNotEmpty)
+                          Text('Sales Person: ${q.salesPerson}', style: theme.textTheme.titleMedium?.copyWith(color: Colors.blueGrey)),
                         Text('Valid Until: ${FormatHelper.formatDate(q.validUntil)}', style: theme.textTheme.bodyLarge),
                         const SizedBox(height: 8),
                         Container(
@@ -151,7 +155,11 @@ class QuotationViewScreen extends ConsumerWidget {
                                 Text('Discount: ${FormatHelper.formatCurrency(q.discount)}'),
                                 Text('Tax: ${FormatHelper.formatCurrency(q.tax)}'),
                                 const SizedBox(height: 8),
-                                Text('Total: ${FormatHelper.formatCurrency(q.total)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                Text('Total: ${FormatHelper.formatCurrency(q.total)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                const SizedBox(height: 8),
+                                Text('Advance: ${FormatHelper.formatCurrency(q.advanceAmount)}', style: TextStyle(color: Colors.green[700])),
+                                const SizedBox(height: 4),
+                                Text('Balance: ${FormatHelper.formatCurrency(q.balanceAmount)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.blue)),
                               ],
                             )
                           ],

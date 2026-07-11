@@ -5,19 +5,23 @@ import (
 )
 
 type Quotation struct {
-	ID             string          `gorm:"primaryKey;type:varchar(50)" json:"id"`
-	TenantID       string          `gorm:"type:varchar(50);not null" json:"tenant_id"`
-	OrganizationID string          `gorm:"type:varchar(50)" json:"organization_id"`
-	CustomerID     string          `gorm:"type:varchar(50);not null" json:"customer_id"`
-	Customer       Customer        `gorm:"foreignKey:CustomerID" json:"customer"`
-	Status         string          `gorm:"type:varchar(50);not null;default:'Draft'" json:"status"`
-	DateCreated    time.Time       `gorm:"not null" json:"date_created"`
-	ValidUntil     time.Time       `gorm:"not null" json:"valid_until"`
-	Subtotal       float64         `gorm:"type:numeric(15,2);not null;default:0" json:"subtotal"`
-	Discount       float64         `gorm:"type:numeric(15,2);not null;default:0" json:"discount"`
-	Tax            float64         `gorm:"type:numeric(15,2);not null;default:0" json:"tax"`
-	Total          float64         `gorm:"type:numeric(15,2);not null;default:0" json:"total"`
-	Notes          *string         `gorm:"type:text" json:"notes"`
+	ID              string          `gorm:"primaryKey;type:varchar(50)" json:"id"`
+	QuotationNumber string          `gorm:"type:varchar(50)" json:"quotation_number"`
+	TenantID        string          `gorm:"type:varchar(50);not null" json:"tenant_id"`
+	OrganizationID  string          `gorm:"type:varchar(50)" json:"organization_id"`
+	CustomerID      string          `gorm:"type:varchar(50);not null" json:"customer_id"`
+	Customer        Customer        `gorm:"foreignKey:CustomerID" json:"customer"`
+	SalesPerson     *string         `gorm:"type:varchar(100)" json:"sales_person"`
+	Status          string          `gorm:"type:varchar(50);not null;default:'Draft'" json:"status"`
+	DateCreated     time.Time       `gorm:"not null" json:"date_created"`
+	ValidUntil      time.Time       `gorm:"not null" json:"valid_until"`
+	Subtotal        float64         `gorm:"type:numeric(15,2);not null;default:0" json:"subtotal"`
+	Discount        float64         `gorm:"type:numeric(15,2);not null;default:0" json:"discount"`
+	Tax             float64         `gorm:"type:numeric(15,2);not null;default:0" json:"tax"`
+	AdvanceAmount   float64         `gorm:"type:numeric(15,2);not null;default:0" json:"advance_amount"`
+	BalanceAmount   float64         `gorm:"type:numeric(15,2);not null;default:0" json:"balance_amount"`
+	Total           float64         `gorm:"type:numeric(15,2);not null;default:0" json:"total"`
+	Notes           *string         `gorm:"type:text" json:"notes"`
 	Items          []QuotationItem `gorm:"foreignKey:QuotationID" json:"items"`
 	CreatedBy      string          `gorm:"type:varchar(50)" json:"created_by"`
 	CreatedOn      time.Time       `gorm:"autoCreateTime" json:"created_on"`

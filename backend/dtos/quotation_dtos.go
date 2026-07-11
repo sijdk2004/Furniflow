@@ -9,12 +9,15 @@ type QuotationItemRequest struct {
 }
 
 type QuotationRequest struct {
-	CustomerID string                 `json:"customer_id" validate:"required"`
-	ValidUntil time.Time              `json:"valid_until" validate:"required"`
-	Discount   float64                `json:"discount" validate:"min=0"`
-	Tax        float64                `json:"tax" validate:"min=0"`
-	Notes      *string                `json:"notes"`
-	Items      []QuotationItemRequest `json:"items" validate:"required,min=1,dive"`
+	QuotationNumber *string                `json:"quotation_number"`
+	CustomerID      string                 `json:"customer_id" validate:"required"`
+	SalesPerson     *string                `json:"sales_person"`
+	ValidUntil      time.Time              `json:"valid_until" validate:"required"`
+	Discount        float64                `json:"discount" validate:"min=0"`
+	Tax             float64                `json:"tax" validate:"min=0"`
+	AdvanceAmount   float64                `json:"advance_amount" validate:"min=0"`
+	Notes           *string                `json:"notes"`
+	Items           []QuotationItemRequest `json:"items" validate:"required,min=1,dive"`
 }
 
 type QuotationStatusUpdateRequest struct {

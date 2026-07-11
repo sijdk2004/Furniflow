@@ -85,6 +85,9 @@ class AppTheme {
         space: 1,
         thickness: 1,
       ),
+      snackBarTheme: const SnackBarThemeData(
+        showCloseIcon: true,
+      ),
     );
   }
 
@@ -169,6 +172,9 @@ class AppTheme {
         color: AppColors.borderDark,
         space: 1,
         thickness: 1,
+      ),
+      snackBarTheme: const SnackBarThemeData(
+        showCloseIcon: true,
       ),
     );
   }

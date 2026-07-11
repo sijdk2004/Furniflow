@@ -27,6 +27,7 @@ type User struct {
 	Username     string  `gorm:"type:varchar(100);uniqueIndex;not null" json:"username"`
 	Email        string  `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
 	PasswordHash string  `gorm:"type:varchar(255);not null" json:"-"`
+	Password     string  `gorm:"-" json:"password,omitempty"`
 	FirstName    string  `gorm:"type:varchar(100);not null" json:"first_name"`
 	LastName     *string `gorm:"type:varchar(100)" json:"last_name"`
 	Mobile       *string `gorm:"type:varchar(20)" json:"mobile"`

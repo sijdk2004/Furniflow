@@ -45,9 +45,13 @@ class QuotationModel {
   final String status;
   final DateTime dateCreated;
   final DateTime validUntil;
+  final String? quotationNumber;
+  final String? salesPerson;
   final double subtotal;
   final double discount;
   final double tax;
+  final double advanceAmount;
+  final double balanceAmount;
   final double total;
   final String? notes;
   final List<QuotationItemModel> items;
@@ -59,9 +63,13 @@ class QuotationModel {
     required this.status,
     required this.dateCreated,
     required this.validUntil,
+    this.quotationNumber,
+    this.salesPerson,
     required this.subtotal,
     required this.discount,
     required this.tax,
+    required this.advanceAmount,
+    required this.balanceAmount,
     required this.total,
     this.notes,
     required this.items,
@@ -78,9 +86,13 @@ class QuotationModel {
       status: json['status'],
       dateCreated: DateTime.parse(json['date_created']),
       validUntil: DateTime.parse(json['valid_until']),
+      quotationNumber: json['quotation_number'],
+      salesPerson: json['sales_person'],
       subtotal: (json['subtotal'] as num).toDouble(),
       discount: (json['discount'] as num).toDouble(),
       tax: (json['tax'] as num).toDouble(),
+      advanceAmount: (json['advance_amount'] ?? 0).toDouble(),
+      balanceAmount: (json['balance_amount'] ?? 0).toDouble(),
       total: (json['total'] as num).toDouble(),
       notes: json['notes'],
       items: itemsList,

@@ -46,8 +46,7 @@ func main() {
 		{Code: "SET", Name: "Sets", Description: "Bundle of items", SortOrder: 20},
 	})
 	seedMasterData(db, tenantID, "currencies", []models.MasterData{
-		{Code: "USD", Name: "US Dollar", Description: "$", SortOrder: 10},
-		{Code: "EUR", Name: "Euro", Description: "€", SortOrder: 20},
+		{Code: "INR", Name: "Indian Rupee", Description: "₹", SortOrder: 10},
 	})
 	seedMasterData(db, tenantID, "customer_types", []models.MasterData{
 		{Code: "RETAIL", Name: "Retail Customer", Description: "Individual buyers", SortOrder: 10},

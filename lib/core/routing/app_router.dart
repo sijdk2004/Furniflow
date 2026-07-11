@@ -54,6 +54,9 @@ import '../../features/catalog/presentation/category_view_screen.dart';
 import '../../features/catalog/presentation/product_form_screen.dart';
 import '../../features/catalog/presentation/product_view_screen.dart';
 import '../../features/auth/presentation/auth_provider.dart';
+import '../../features/auth/presentation/rbac_provider.dart';
+import '../../features/auth/presentation/unauthorized_screen.dart';
+import 'permission_guard.dart';
 // Placeholder for missing screens
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -89,15 +92,26 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return null; // wait for initial state check
       }
 
+      String getDefaultRoute() {
+        final perms = ref.read(rbacProvider).permissions;
+        if (perms.contains('DSH.DSH_HOME.VIEW')) return '/dashboard';
+        if (perms.contains('DSH.SALES_DSH.VIEW')) return '/sales-dashboard';
+        if (perms.contains('MFG.DSH.VIEW')) return '/manufacturing-dashboard';
+        if (perms.contains('DLV.DLV_LIST.VIEW')) return '/delivery-dashboard';
+        if (perms.contains('CAT.CAT_PROD.VIEW')) return '/catalog';
+        if (perms.contains('CUS.CUS_LIST.VIEW')) return '/customers';
+        return '/unauthorized'; 
+      }
+
       if (state.matchedLocation == '/') {
-        return isAuth ? '/dashboard' : '/login';
+        return isAuth ? getDefaultRoute() : '/login';
       }
 
       if (!isAuth && !isGoingToLogin) {
         return '/login';
       }
       if (isAuth && isGoingToLogin) {
-        return '/dashboard';
+        return getDefaultRoute();
       }
       return null;
     },
@@ -108,8 +122,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/',
-        redirect: (context, state) => '/dashboard',
+        redirect: (context, state) {
+          final isAuth = ref.read(authProvider).status == AuthStateStatus.authenticated;
+          if (!isAuth) return '/login';
+          final perms = ref.read(rbacProvider).permissions;
+          if (perms.contains('DSH.DSH_HOME.VIEW')) return '/dashboard';
+          if (perms.contains('DSH.SALES_DSH.VIEW')) return '/sales-dashboard';
+          if (perms.contains('MFG.DSH.VIEW')) return '/manufacturing-dashboard';
+          if (perms.contains('DLV.DLV_LIST.VIEW')) return '/delivery-dashboard';
+          if (perms.contains('CAT.CAT_PROD.VIEW')) return '/catalog';
+          return '/customers'; 
+        },
       ),
+
+      GoRoute(
+        path: '/unauthorized',
+        builder: (context, state) => const UnauthorizedScreen(),
+      ),
+
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) {
@@ -119,7 +149,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/dashboard',
             name: 'dashboard',
-            builder: (context, state) => const DashboardScreen(),
+            builder: (context, state) => const PermissionGuard(
+              requiredPermission: 'DSH.DSH_HOME.VIEW',
+              child: DashboardScreen(),
+            ),
           ),
           GoRoute(
             path: '/sales-dashboard',
@@ -174,7 +207,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/customers',
-            builder: (context, state) => const CustomersScreen(),
+            builder: (context, state) => const PermissionGuard(
+              requiredPermission: 'CUS.CUS_LIST.VIEW',
+              child: CustomersScreen(),
+            ),
             routes: [
               GoRoute(
                 path: 'create',

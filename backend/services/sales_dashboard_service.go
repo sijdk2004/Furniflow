@@ -13,6 +13,6 @@ func NewSalesDashboardService(repo *repositories.SalesDashboardRepository) *Sale
 	return &SalesDashboardService{repo: repo}
 }
 
-func (s *SalesDashboardService) GetSalesDashboardData(tenantID string, filter *models.SalesDashboardFilterRequest) (*models.SalesDashboardResponse, error) {
-	return s.repo.GetSalesDashboardData(tenantID, filter)
+func (s *SalesDashboardService) GetSalesDashboardData(tenantID string, filter *models.SalesDashboardFilterRequest, isRestricted bool) (*models.SalesDashboardResponse, error) {
+	return s.repo.GetSalesDashboardData(tenantID, filter, isRestricted)
 }

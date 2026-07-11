@@ -81,11 +81,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               ],
             ).animate().fade().slideY(begin: -0.2),
             const SizedBox(height: 32),
-            
-            // Executive Summary
-            _buildExecutiveSummary(context).animate().fade(delay: 50.ms).slideY(begin: 0.1),
             const SizedBox(height: 32),
-
+            
             // KPI Cards
             LayoutBuilder(
               builder: (context, constraints) {
@@ -225,36 +222,6 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildExecutiveSummary(BuildContext context) {
-    final theme = Theme.of(context);
-    return PremiumCard(
-      padding: const EdgeInsets.all(24),
-      gradient: LinearGradient(colors: [Colors.blue.shade900, Colors.purple.shade900]),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(LucideIcons.sparkles, color: Colors.yellowAccent),
-              const SizedBox(width: 8),
-              Text('Executive AI Insights', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              const InsightPill(text: 'Revenue grew by 14.2% this month.', icon: Icons.trending_up, color: Colors.greenAccent),
-              const InsightPill(text: 'Gross margin improved to 42.5%.', icon: Icons.trending_up, color: Colors.greenAccent),
-              const InsightPill(text: 'B2B office furniture contracts are driving growth.', icon: Icons.star, color: Colors.yellowAccent),
-            ],
-          ),
-        ],
       ),
     );
   }

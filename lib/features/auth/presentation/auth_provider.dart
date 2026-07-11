@@ -62,8 +62,17 @@ class AuthNotifier extends Notifier<AuthState> {
       
       state = AuthState(status: AuthStateStatus.authenticated);
     } on DioException catch (e) {
-      final msg = e.response?.data?['error'] ?? 'Login failed. Please check your credentials.';
-      state = AuthState(status: AuthStateStatus.error, errorMessage: msg.toString());
+      String msg = 'Login failed. Please check your credentials.';
+      if (e.response?.data != null) {
+        if (e.response!.data is Map && e.response!.data['error'] != null) {
+          msg = e.response!.data['error'].toString();
+        } else if (e.response!.data is String && (e.response!.data as String).isNotEmpty) {
+          msg = e.response!.data.toString();
+        }
+      } else if (e.type == DioExceptionType.connectionError || e.type == DioExceptionType.unknown) {
+        msg = 'Connection error. Please check your network or server status.';
+      }
+      state = AuthState(status: AuthStateStatus.error, errorMessage: msg);
     } catch (e) {
       state = AuthState(status: AuthStateStatus.error, errorMessage: 'An unexpected error occurred.');
     }

@@ -32,7 +32,7 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
           children: [
             _buildHeader(context),
             const SizedBox(height: 32),
-            _buildHealthScoreAndInsights(context),
+            _buildHealthScore(context),
             const SizedBox(height: 32),
             _buildExecutiveKPIs(context, isDesktop),
             const SizedBox(height: 32),
@@ -222,13 +222,9 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
     );
   }
 
-  Widget _buildHealthScoreAndInsights(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: PremiumCard(
-            child: Row(
+  Widget _buildHealthScore(BuildContext context) {
+    return PremiumCard(
+      child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
@@ -275,41 +271,7 @@ class _FinancialOverviewScreenState extends State<FinancialOverviewScreen> {
                 ),
               ],
             ),
-          ).animate().fade(delay: 100.ms).slideX(begin: -0.1),
-        ),
-        const SizedBox(width: 24),
-        Expanded(
-          flex: 2,
-          child: PremiumCard(
-            padding: const EdgeInsets.all(20),
-            gradient: LinearGradient(colors: [Colors.blue.shade900, Colors.purple.shade900]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(LucideIcons.sparkles, color: Colors.yellowAccent),
-                    const SizedBox(width: 8),
-                    Text('Executive AI Insights', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    const InsightPill(text: 'Net profit improved by 6.8% compared to last month.', icon: Icons.trending_up, color: Colors.greenAccent),
-                    const InsightPill(text: 'Receivables older than 90 days increased by 12%.', icon: Icons.warning_amber_rounded, color: Colors.orangeAccent),
-                    const InsightPill(text: 'Dining Tables generated the highest profit margin.', icon: Icons.star, color: Colors.yellowAccent),
-                    const InsightPill(text: 'Quotation pipeline indicates strong future revenue.', icon: Icons.timeline, color: Colors.cyanAccent),
-                  ],
-                ),
-              ],
-            ),
-          ).animate().fade(delay: 200.ms).slideX(begin: 0.1),
-        ),
-      ],
-    );
+          ).animate().fade(delay: 100.ms).slideX(begin: -0.1);
   }
 
   Widget _buildInsightPill(String text, IconData icon, Color color) {

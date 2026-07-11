@@ -6,11 +6,13 @@ import (
 
 type SalesOrder struct {
 	ID                   string           `gorm:"primaryKey;type:varchar(50)" json:"id"`
+	OrderNumber          string           `gorm:"type:varchar(50)" json:"order_number"`
 	TenantID             string           `gorm:"type:varchar(50);not null" json:"tenant_id"`
 	OrganizationID       string           `gorm:"type:varchar(50)" json:"organization_id"`
 	CustomerID           string           `gorm:"type:varchar(50);not null" json:"customer_id"`
 	Customer             Customer         `gorm:"foreignKey:CustomerID" json:"customer"`
 	QuotationID          *string          `gorm:"type:varchar(50)" json:"quotation_id"`
+	SalesPerson          string           `gorm:"type:varchar(100)" json:"sales_person"`
 	Status               string           `gorm:"type:varchar(50);not null;default:'Draft'" json:"status"`
 	OrderDate            time.Time        `gorm:"not null" json:"order_date"`
 	ExpectedDeliveryDate *time.Time       `json:"expected_delivery_date"`

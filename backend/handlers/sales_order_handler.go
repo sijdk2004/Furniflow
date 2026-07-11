@@ -4,7 +4,6 @@ import (
 	"furniflow-backend/dtos"
 	"furniflow-backend/services"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type SalesOrderHandler struct {
@@ -22,8 +21,13 @@ func NewSalesOrderHandler(service *services.SalesOrderService) *SalesOrderHandle
 // @Security Bearer
 // @Router /v1/sales-orders [get]
 func (h *SalesOrderHandler) GetAll(c *fiber.Ctx) error {
-	tenantID := c.Get("X-Tenant-ID")
-	orders, err := h.service.GetAll(tenantID)
+	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
+	orders, err := h.service.GetAll(tenantID, isRestricted, userID)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -39,9 +43,14 @@ func (h *SalesOrderHandler) GetAll(c *fiber.Ctx) error {
 // @Router /v1/sales-orders/{id} [get]
 func (h *SalesOrderHandler) GetByID(c *fiber.Ctx) error {
 	id := c.Params("id")
-	tenantID := c.Get("X-Tenant-ID")
+	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
-	order, err := h.service.GetByID(id, tenantID)
+	order, err := h.service.GetByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -59,17 +68,19 @@ func (h *SalesOrderHandler) GetByID(c *fiber.Ctx) error {
 // @Router /v1/sales-orders/{id} [put]
 func (h *SalesOrderHandler) Update(c *fiber.Ctx) error {
 	id := c.Params("id")
-	tenantID := c.Get("X-Tenant-ID")
-	userToken := c.Locals("user").(*jwt.Token)
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := claims["user_id"].(string)
+	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
 	var req dtos.SalesOrderUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
-	order, err := h.service.Update(id, tenantID, userID, req)
+	order, err := h.service.Update(id, tenantID, userID, req, isRestricted)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -87,17 +98,19 @@ func (h *SalesOrderHandler) Update(c *fiber.Ctx) error {
 // @Router /v1/sales-orders/{id}/status [patch]
 func (h *SalesOrderHandler) UpdateStatus(c *fiber.Ctx) error {
 	id := c.Params("id")
-	tenantID := c.Get("X-Tenant-ID")
-	userToken := c.Locals("user").(*jwt.Token)
-	claims := userToken.Claims.(jwt.MapClaims)
-	userID := claims["user_id"].(string)
+	tenantID := c.Locals("tenant_id").(string)
+	userID := c.Locals("user_id").(string)
+	isRestricted := false
+	if val := c.Locals("is_restricted_sales"); val != nil {
+		isRestricted = val.(bool)
+	}
 
 	var req dtos.SalesOrderStatusUpdateRequest
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
-	if err := h.service.UpdateStatus(id, tenantID, userID, req.Status); err != nil {
+	if err := h.service.UpdateStatus(id, tenantID, userID, req.Status, isRestricted); err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 

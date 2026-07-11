@@ -75,8 +75,8 @@ class ProductionTrackingScreen extends ConsumerWidget {
 
   Widget _buildTrackingHeader(ProductionTrackingModel tracking) {
     Color stageColor = AppColors.primary;
-    if (tracking.currentStage == 'On Hold') stageColor = Colors.amber;
-    if (tracking.currentStage == 'Ready For Delivery') stageColor = Colors.green;
+    if (tracking.isOnHold) stageColor = Colors.amber;
+    if (tracking.completionPercentage == 100) stageColor = Colors.green;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -89,11 +89,19 @@ class ProductionTrackingScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
-                child: Text('Current Stage: ${tracking.currentStage}', style: TextStyle(color: stageColor, fontSize: 24, fontWeight: FontWeight.bold)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Production Detail', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text('Order ID: ${tracking.productionOrderId}', style: const TextStyle(color: Colors.white54, fontSize: 14)),
+                  ],
+                ),
               ),
-              if (tracking.currentStage == 'On Hold')
+              if (tracking.isOnHold)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
@@ -105,7 +113,9 @@ class ProductionTrackingScreen extends ConsumerWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
+          Text('Current Stage: ${tracking.currentStage}', style: TextStyle(color: stageColor, fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -131,7 +141,7 @@ class ProductionTrackingScreen extends ConsumerWidget {
   Widget _buildActions(BuildContext context, WidgetRef ref, ProductionTrackingModel tracking) {
     final currentHistory = tracking.histories.isNotEmpty ? tracking.histories.first : null;
     final isStarted = currentHistory?.stageStartedAt != null;
-    final isOnHold = tracking.currentStage == 'On Hold';
+    final isOnHold = tracking.isOnHold;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -188,24 +198,8 @@ class ProductionTrackingScreen extends ConsumerWidget {
   }
 
   void _resumeProduction(BuildContext context, WidgetRef ref, ProductionTrackingModel tracking) async {
-    final stages = [
-      "Raw Material Ready", "Cutting", "Carpentry", "Assembly", "Sanding",
-      "Sealer", "Painting", "Polishing", "Drying", "Quality Inspection",
-      "Packing", "Ready For Delivery"
-    ];
-    // Resume to the last known production stage from history
-    String resumeStage = "Raw Material Ready";
-    for (final h in tracking.histories) {
-      if (stages.contains(h.stage)) {
-        resumeStage = h.stage;
-        break;
-      }
-    }
-
     final repo = ref.read(productionTrackingRepositoryProvider);
-    await repo.updateStage(tracking.id, resumeStage,
-        team: tracking.assignedTeam,
-        remarks: 'Resumed from On Hold');
+    await repo.toggleHold(tracking.id, false, reason: 'Resumed from On Hold');
     ref.refresh(productionTrackingDetailProvider(tracking.id));
     ref.refresh(productionBoardProvider);
     if (context.mounted) {
@@ -250,11 +244,10 @@ class ProductionTrackingScreen extends ConsumerWidget {
             onPressed: () async {
               if (holdReasonController.text.trim().isEmpty) return;
               final repo = ref.read(productionTrackingRepositoryProvider);
-              await repo.updateStage(
+              await repo.toggleHold(
                 tracking.id,
-                'On Hold',
-                remarks: holdReasonController.text,
-                delayReason: holdReasonController.text,
+                true,
+                reason: holdReasonController.text,
               );
               if (ctx.mounted) Navigator.pop(ctx);
               ref.refresh(productionTrackingDetailProvider(tracking.id));
@@ -267,12 +260,10 @@ class ProductionTrackingScreen extends ConsumerWidget {
     );
   }
 
-  void _showNextStageDialog(BuildContext context, WidgetRef ref, ProductionTrackingModel tracking) {
-    final stages = [
-      "Raw Material Ready", "Cutting", "Carpentry", "Assembly", "Sanding", 
-      "Sealer", "Painting", "Polishing", "Drying", "Quality Inspection", 
-      "Packing", "Ready For Delivery"
-    ];
+  void _showNextStageDialog(BuildContext context, WidgetRef ref, ProductionTrackingModel tracking) async {
+    final stages = await ref.read(productionStagesProvider.future);
+    
+    if (!context.mounted) return;
     
     int currentIndex = stages.indexOf(tracking.currentStage);
     String nextStage = currentIndex + 1 < stages.length ? stages[currentIndex + 1] : stages.last;

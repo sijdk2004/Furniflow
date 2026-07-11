@@ -44,7 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next.status == AuthStateStatus.authenticated) {
-        context.go('/dashboard');
+        context.go('/');
       } else if (next.status == AuthStateStatus.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(next.errorMessage ?? 'Login failed')),
@@ -137,8 +137,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         const SizedBox(height: 48),
                         
-                        // Email Field
-                        Text('Email Address', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                        // Email/Username Field
+                        Text('Username or Email', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _emailController,

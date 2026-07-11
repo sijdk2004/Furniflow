@@ -1,7 +1,9 @@
 class SalesOrder {
   final String id;
+  final String? orderNumber;
   final String customerId;
   final String? quotationId;
+  final String? salesPerson;
   final String status;
   final DateTime orderDate;
   final DateTime? expectedDeliveryDate;
@@ -15,8 +17,10 @@ class SalesOrder {
 
   SalesOrder({
     required this.id,
+    this.orderNumber,
     required this.customerId,
     this.quotationId,
+    this.salesPerson,
     required this.status,
     required this.orderDate,
     this.expectedDeliveryDate,
@@ -32,8 +36,10 @@ class SalesOrder {
   factory SalesOrder.fromJson(Map<String, dynamic> json) {
     return SalesOrder(
       id: json['id'],
+      orderNumber: json['order_number'],
       customerId: json['customer_id'],
       quotationId: json['quotation_id'],
+      salesPerson: json['sales_person'],
       status: json['status'],
       orderDate: DateTime.parse(json['order_date']),
       expectedDeliveryDate: json['expected_delivery_date'] != null 
@@ -55,8 +61,10 @@ class SalesOrder {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'order_number': orderNumber,
       'customer_id': customerId,
       'quotation_id': quotationId,
+      'sales_person': salesPerson,
       'status': status,
       'order_date': orderDate.toIso8601String(),
       'expected_delivery_date': expectedDeliveryDate?.toIso8601String(),

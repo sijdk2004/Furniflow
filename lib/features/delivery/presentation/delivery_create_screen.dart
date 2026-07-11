@@ -122,7 +122,8 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                             items: orders,
                             itemAsString: (order) {
                               final displayId = order.id.toString().length > 8 ? order.id.toString().substring(0, 8) : order.id.toString();
-                              return 'PO-$displayId - ${order.status}';
+                              final productName = order.product?['product_name'] ?? 'Unknown Product';
+                              return 'PO-$displayId - $productName (${order.status})';
                             },
                             selectedItem: orders.where((o) => o.id == _selectedProductionOrderId).firstOrNull,
                             onChanged: (val) => setState(() => _selectedProductionOrderId = val?.id),
@@ -142,7 +143,33 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                             lastDate: DateTime.now().add(const Duration(days: 365)),
                           );
                           if (date != null) {
-                            setState(() => _expectedDeliveryDate = date);
+                            if (mounted) {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(_expectedDeliveryDate),
+                              );
+                              if (time != null) {
+                                setState(() {
+                                  _expectedDeliveryDate = DateTime(
+                                    date.year,
+                                    date.month,
+                                    date.day,
+                                    time.hour,
+                                    time.minute,
+                                  );
+                                });
+                              } else {
+                                setState(() {
+                                  _expectedDeliveryDate = DateTime(
+                                    date.year,
+                                    date.month,
+                                    date.day,
+                                    _expectedDeliveryDate.hour,
+                                    _expectedDeliveryDate.minute,
+                                  );
+                                });
+                              }
+                            }
                           }
                         },
                         child: InputDecorator(
@@ -153,7 +180,7 @@ class _DeliveryCreateScreenState extends ConsumerState<DeliveryCreateScreen> {
                             enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: AppColors.borderDark)),
                           ),
                           child: Text(
-                            FormatHelper.formatDate(_expectedDeliveryDate),
+                            FormatHelper.formatDateTime24(_expectedDeliveryDate),
                             style: const TextStyle(color: AppColors.textPrimaryDark),
                           ),
                         ),

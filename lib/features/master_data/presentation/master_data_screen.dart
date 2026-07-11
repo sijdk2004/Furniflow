@@ -178,11 +178,12 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
       body: Row(
         children: [
           // Left Sidebar (Master Types)
-          Container(
-            width: 250,
+          Material(
             color: theme.colorScheme.surface,
-            child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 24),
+            child: SizedBox(
+              width: 250,
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 24),
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -217,6 +218,7 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
                 }),
               ],
             ),
+            ),
           ),
           const VerticalDivider(width: 1, thickness: 1),
           // Right Main Area
@@ -230,19 +232,22 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(selectedLabel, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          Text('Manage reference data for $selectedLabel', style: theme.textTheme.bodyMedium),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(selectedLabel, style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
+                            const SizedBox(height: 4),
+                            Text('Manage reference data for $selectedLabel', style: theme.textTheme.bodyMedium),
+                          ],
+                        ),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: _showAddEditDialog,
-                        icon: const Icon(LucideIcons.plus, size: 18),
-                        label: const Text('Add Record'),
-                      ),
+                      if (selectedType != 'currencies')
+                        ElevatedButton.icon(
+                          onPressed: _showAddEditDialog,
+                          icon: const Icon(LucideIcons.plus, size: 18),
+                          label: const Text('Add Record'),
+                        ),
                     ],
                   ).animate().fade().slideY(begin: -0.2),
                 ),
@@ -296,12 +301,13 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
                                       child: DataTable(
                                         columnSpacing: 24,
                                         horizontalMargin: 16,
-                                        columns: const [
-                                    DataColumn(label: Text('Code', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Description', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Sort Order', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
+                                        columns: [
+                                    const DataColumn(label: Text('Code', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    const DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    const DataColumn(label: Text('Description', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    const DataColumn(label: Text('Sort Order', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    if (selectedType != 'currencies')
+                                      const DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
                                   ],
                                   rows: filtered.map((record) {
                                     return DataRow(
@@ -310,24 +316,25 @@ class _MasterDataScreenState extends ConsumerState<MasterDataScreen> {
                                         DataCell(Text(record.name)),
                                         DataCell(Text(record.description.length > 30 ? '${record.description.substring(0, 30)}...' : record.description)),
                                         DataCell(Text(record.sortOrder.toString())),
-                                        DataCell(
-                                          Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              IconButton(
-                                                icon: const Icon(LucideIcons.penLine, size: 18),
-                                                tooltip: 'Edit',
-                                                onPressed: () => _showAddEditDialog(record: record),
-                                              ),
-                                              IconButton(
-                                                icon: const Icon(LucideIcons.trash2, size: 18),
-                                                color: Colors.red,
-                                                tooltip: 'Delete',
-                                                onPressed: () => _confirmDelete(record),
-                                              ),
-                                            ],
+                                        if (selectedType != 'currencies')
+                                          DataCell(
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: const Icon(LucideIcons.penLine, size: 18),
+                                                  tooltip: 'Edit',
+                                                  onPressed: () => _showAddEditDialog(record: record),
+                                                ),
+                                                IconButton(
+                                                  icon: const Icon(LucideIcons.trash2, size: 18),
+                                                  color: Colors.red,
+                                                  tooltip: 'Delete',
+                                                  onPressed: () => _confirmDelete(record),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                        ),
                                       ],
                                     );
                                   }).toList(),

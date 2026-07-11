@@ -49,22 +49,34 @@ func (s *QuotationService) Create(tenantID, userID string, req dtos.QuotationReq
 	items := s.buildItems(qID, req.Items)
 	subtotal, total := s.calculateTotals(req, items)
 
-	quotation := &models.Quotation{
-		ID:          qID,
-		TenantID:    tenantID,
-		CustomerID:  req.CustomerID,
-		Status:      "Draft",
-		DateCreated: time.Now(),
-		ValidUntil:  req.ValidUntil,
-		Subtotal:    subtotal,
-		Discount:    req.Discount,
-		Tax:         req.Tax,
-		Total:       total,
-		Notes:       req.Notes,
-		Items:       items,
-		CreatedBy:   userID,
-		IsActive:    true,
+	quotationNum := ""
+	if req.QuotationNumber != nil {
+		quotationNum = *req.QuotationNumber
+	} else {
+		quotationNum = qID
 	}
+
+	quotation := &models.Quotation{
+		ID:              qID,
+		QuotationNumber: quotationNum,
+		TenantID:        tenantID,
+		CustomerID:      req.CustomerID,
+		SalesPerson:     req.SalesPerson,
+		Status:          "Draft",
+		DateCreated:     time.Time{}, // Will use time.Now()
+		ValidUntil:      req.ValidUntil,
+		Subtotal:        subtotal,
+		Discount:        req.Discount,
+		Tax:             req.Tax,
+		AdvanceAmount:   req.AdvanceAmount,
+		BalanceAmount:   total - req.AdvanceAmount,
+		Total:           total,
+		Notes:           req.Notes,
+		Items:           items,
+		CreatedBy:       userID,
+		IsActive:        true,
+	}
+	quotation.DateCreated = time.Now()
 
 	if err := s.repo.Create(quotation); err != nil {
 		return nil, err
@@ -72,16 +84,16 @@ func (s *QuotationService) Create(tenantID, userID string, req dtos.QuotationReq
 	return quotation, nil
 }
 
-func (s *QuotationService) GetAll(tenantID string) ([]models.Quotation, error) {
-	return s.repo.FindAll(tenantID)
+func (s *QuotationService) GetAll(tenantID string, isRestricted bool, userID string) ([]models.Quotation, error) {
+	return s.repo.FindAll(tenantID, isRestricted, userID)
 }
 
-func (s *QuotationService) GetByID(id, tenantID string) (*models.Quotation, error) {
-	return s.repo.FindByID(id, tenantID)
+func (s *QuotationService) GetByID(id, tenantID string, isRestricted bool, userID string) (*models.Quotation, error) {
+	return s.repo.FindByID(id, tenantID, isRestricted, userID)
 }
 
-func (s *QuotationService) Update(id, tenantID, userID string, req dtos.QuotationRequest) (*models.Quotation, error) {
-	existing, err := s.repo.FindByID(id, tenantID)
+func (s *QuotationService) Update(id, tenantID, userID string, req dtos.QuotationRequest, isRestricted bool) (*models.Quotation, error) {
+	existing, err := s.repo.FindByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -93,11 +105,17 @@ func (s *QuotationService) Update(id, tenantID, userID string, req dtos.Quotatio
 	items := s.buildItems(existing.ID, req.Items)
 	subtotal, total := s.calculateTotals(req, items)
 
+	if req.QuotationNumber != nil {
+		existing.QuotationNumber = *req.QuotationNumber
+	}
 	existing.CustomerID = req.CustomerID
+	existing.SalesPerson = req.SalesPerson
 	existing.ValidUntil = req.ValidUntil
 	existing.Subtotal = subtotal
 	existing.Discount = req.Discount
 	existing.Tax = req.Tax
+	existing.AdvanceAmount = req.AdvanceAmount
+	existing.BalanceAmount = total - req.AdvanceAmount
 	existing.Total = total
 	existing.Notes = req.Notes
 	existing.Items = items
@@ -108,22 +126,22 @@ func (s *QuotationService) Update(id, tenantID, userID string, req dtos.Quotatio
 		return nil, err
 	}
 
-	return s.GetByID(id, tenantID) // reload with relations
+	return s.GetByID(id, tenantID, isRestricted, userID) // reload with relations
 }
 
-func (s *QuotationService) Delete(id, tenantID string) error {
-	existing, err := s.repo.FindByID(id, tenantID)
+func (s *QuotationService) Delete(id, tenantID string, isRestricted bool, userID string) error {
+	existing, err := s.repo.FindByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return err
 	}
 	if existing.Status == "Converted" {
 		return errors.New("cannot delete converted quotation")
 	}
-	return s.repo.Delete(id, tenantID)
+	return s.repo.Delete(id, tenantID, isRestricted, userID)
 }
 
-func (s *QuotationService) UpdateStatus(id, tenantID, userID, status string) error {
-	existing, err := s.repo.FindByID(id, tenantID)
+func (s *QuotationService) UpdateStatus(id, tenantID, userID, status string, isRestricted bool) error {
+	existing, err := s.repo.FindByID(id, tenantID, isRestricted, userID)
 	if err != nil {
 		return err
 	}
@@ -147,11 +165,18 @@ func (s *QuotationService) UpdateStatus(id, tenantID, userID, status string) err
 			})
 		}
 
+		salesPersonStr := ""
+		if existing.SalesPerson != nil {
+			salesPersonStr = *existing.SalesPerson
+		}
+
 		so := &models.SalesOrder{
 			ID:          soID,
+			OrderNumber: soID, // Default to SO ID for Order Number initially
 			TenantID:    tenantID,
 			CustomerID:  existing.CustomerID,
 			QuotationID: &existing.ID,
+			SalesPerson: salesPersonStr,
 			Status:      "Draft",
 			OrderDate:   time.Now(),
 			Subtotal:    existing.Subtotal,
@@ -167,5 +192,5 @@ func (s *QuotationService) UpdateStatus(id, tenantID, userID, status string) err
 		}
 	}
 
-	return s.repo.UpdateStatus(id, tenantID, status)
+	return s.repo.UpdateStatus(id, tenantID, status, isRestricted, userID)
 }

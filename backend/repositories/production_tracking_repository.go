@@ -55,6 +55,7 @@ func (r *ProductionTrackingRepository) GetBoardItems(tenantID string) ([]models.
 			po.planned_end_date,
 			pt.current_stage,
 			pt.completion_percentage,
+			pt.is_on_hold,
 			pt.assigned_team
 		FROM production_trackings pt
 		JOIN production_orders po ON pt.production_order_id = po.id
